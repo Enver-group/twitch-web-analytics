@@ -93,7 +93,8 @@ class User:
         if user_names:
             user_ids = [connect_to_twitch_endpoint(
                 "users?login="+name)["data"][0]["id"] for name in user_names]
-        # Get users by 100
+        users_list = []
+        # Get users by 100s
         while len(user_ids) > 0:
             users = user_ids[:100]
             user_ids = user_ids[100:]
@@ -104,8 +105,6 @@ class User:
             resp_channel = connect_to_twitch_endpoint(
                 f'channels?broadcaster_id={user_channels_str}')
             channel_data = resp_channel["data"]
-
-            users_list = []
             for i, user_dict in enumerate(user_data):
                 user_name = user_dict.get("login")
                 user_id = user_dict.get("id")
@@ -129,6 +128,7 @@ class User:
         return users_list
     
     @staticmethod
+    @lru_cache
     def get_user(user_id=None,user_name=None):
         """
         Use either user id or user name to retrieve the user's data and make a User object.
