@@ -19,12 +19,12 @@ class User:
     created_at: str = None  # Datetime String -> /user
 
     @property
-    @lru_cache
+    @lru_cache()
     def user_follows(self):
         return User.get_user_follows(self.id)
 
     @staticmethod
-    @lru_cache
+    @lru_cache()
     def get_user_follows(user_or_id:Union[object,str]):
         """
         Returns a list of User objects that the given user follows.
@@ -67,7 +67,7 @@ class User:
         return User.get_num_followers(self.id)
 
     @staticmethod
-    @lru_cache
+    @lru_cache()
     def get_num_followers(user_or_id:Union[object,str]):
         """
         Returns the number of followers of the User object or the user with the given id.
@@ -130,7 +130,7 @@ class User:
         return users_list
     
     @staticmethod
-    @lru_cache
+    @lru_cache()
     def get_user(user_id=None,user_name=None):
         """
         Use either user id or user name to retrieve the user's data and make a User object.
