@@ -2,10 +2,6 @@ import requests
 import os
 from dotenv import find_dotenv, load_dotenv
 
-from collections import deque
-
-from .user import User
-
 # load .env file
 dotenv = find_dotenv()
 load_dotenv(dotenv)
