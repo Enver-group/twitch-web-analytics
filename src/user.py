@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from .twitch_utils import connect_to_twitch_endpoint
 
 from typing import List, Optional, Union
-from functools import cached_property, lru_cache
+from functools import lru_cache
 
 @dataclass
 class User:
@@ -18,7 +18,8 @@ class User:
     profile_image_url: str = None 
     created_at: str = None  # Datetime String -> /user
 
-    @cached_property
+    @property
+    @lru_cache
     def user_follows(self):
         return User.get_user_follows(self.id)
 
@@ -60,7 +61,8 @@ class User:
     def get_follows(self):
         return self.user_follows
     
-    @cached_property
+    @property
+    @lru_cache()
     def num_followers(self):
         return User.get_num_followers(self.id)
 
