@@ -17,18 +17,22 @@ logger.setLevel(logging.INFO)
 @click.argument('output_filepath', type=click.Path(),default="data/data.csv",required=False)
 @click.option('-r', '--roor_user_name', is_flag=False, default="ibai", is_eager=True)
 @click.option('-m', '--max_users', is_flag=False, default=10000, is_eager=True)
-def main(roor_user_name="ibai",output_filepath=None,max_users=10000):
+@click.option('-f', '--get_all_follows', is_flag=True, default=False, is_eager=True)
+def main(roor_user_name="ibai",output_filepath=None,max_users=10000,get_all_follows=False):
     """ Runs data processing scripts to obtain the data  and save it to the /data directory
     """
     logger.info(f'making dataset of followers from initial user {roor_user_name}.')
 
-    make_data_from_root_user(root_user_name=roor_user_name,output_filepath=output_filepath,max_users=max_users)
+    df = make_data_from_root_user(root_user_name=roor_user_name,output_filepath=output_filepath,max_users=max_users)
+    if get_all_follows:
+        logger.info(f'Extracting all the follows of the users in the dataset...')
+        df = extract_follows_from_users_df(df)
 
     if output_filepath:
         logger.info(f'writing dataset to output file {output_filepath}')
+        df.drop_duplicates(subset=["id"],keep="first").to_csv(output_filepath,index=False)
 
-
-def make_data_from_root_user(root_user_name,output_filepath=None,max_users=None,):
+def make_data_from_root_user(root_user_name,output_filepath=None,max_users=None):
     """
     Generate a dataset from a tree of twitch users follows starting from the follows of the given root user until it is manually stopped.
 
@@ -99,7 +103,7 @@ def extract_follows_from_users_df(df_or_file):
     Extract the follows from a dataframe of users and returns the same dataframe but with the follows of each user.
     """
     if isinstance(df_or_file,str):
-        df = pd.read_csv(df_or_file)
+        df = pd.read_csv(df_or_file,lineterminator='\n')
     else:
         df = df_or_file
     users_of_df = User.from_df(df.drop_duplicates(subset=['name','id'],keep='first'))
