@@ -8,10 +8,14 @@ import numpy as np
 
 from ..user import User
 
-logging.basicConfig()
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+import logging
+# Set the logger format to show the name, time in minutes, and message
+logging.basicConfig(
+    format='%(asctime)s - %(name)s.%(funcName)s - %(levelname)s: %(message)s',
+    datefmt='%b %d %H:%M',
+    level=logging.INFO
+)
+logger = logging.getLogger(os.path.basename(__name__).split(".")[-1])
 
 """
 Extract the data required to carry the analysis of hispanic twitch streamers
@@ -19,7 +23,7 @@ Extract the data required to carry the analysis of hispanic twitch streamers
 Usage: 
 ----------
 ```
-python -m src.data --output_file "data/data.csv" --max_users 10000 --root_user "rubius" -f
+python -m src.data --output_file "data/data.csv" --max_users 10000 --root_user "ibai" --get_follows_of_top 1000
 ```
 """
 
@@ -27,16 +31,30 @@ python -m src.data --output_file "data/data.csv" --max_users 10000 --root_user "
 @click.option("-o",'--output_file', type=click.Path(),default="data/data.csv",required=False)
 @click.option('-r', '--root_user', is_flag=False, default="ibai", is_eager=True)
 @click.option('-n', '--max_users', is_flag=False, default=10000, is_eager=True)
-@click.option('-f', '--get_all_follows', is_flag=True, default=False, is_eager=True)
-def main(root_user="ibai",output_file="data/data.csv",max_users=10000,get_all_follows=False):
-    """ Runs data processing scripts to obtain the data  and save it to the /data directory
+@click.option('-f', '--get_follows_of_top', default=-1, is_eager=True, type=int)
+def main(root_user="ibai",output_file="data/data.csv",max_users=10000,get_follows_of_top=0):
+    """
+    Runs data processing scripts to obtain the data  and save it to the /data directory
+
+    Parameters
+    ----------
+    root_user : str
+        The name of the root user to start the tree from.
+    output_file : str
+        The name of the output file.
+    max_users : int
+        The maximum number of users to retrieve.
+    get_follows_of_top : int
+        The number of top users (by view count) to get the follows of after obtaining the information 
+        of all the requested users. If 0 then follows wont be retrieved. If -1 then the follows of all users will be retrieved.
     """
     logger.info(f'making dataset of followers from initial user "{root_user}".')
 
     df = make_data_from_root_user(root_user_name=root_user,output_file=output_file,max_users=max_users)
-    if get_all_follows:
-        logger.info(f'Extracting all the follows of the users in the dataset...')
-        df = extract_follows_from_users_df(df,output_file=output_file)
+
+    if get_follows_of_top:
+        only_top = len(df) if get_follows_of_top==-1 else get_follows_of_top
+        df = extract_follows_from_users_df(df,output_file=output_file,only_top=only_top)
 
     if output_file:
         logger.info(f'writing dataset to output file {output_file}')
@@ -58,20 +76,10 @@ def make_data_from_root_user(root_user_name,output_file=None,max_users=None):
     """
     logger.info(f'Collecting users from a tree of twitch users follows starting from the follows of the user: {root_user_name}')
     if max_users:
-        logger.info(f'New users will be fetched until {max_users} users are reached or the program is manually interrupted.')
+        logger.info(f'New users will be fetched until {max_users} users are reached or the program is manually interrupted...')
     else:
         logger.info(f'New users will be fetched until the program is manually interrupted. Use ctrl+c when you wish to stop.')
     # Get the root user
-    # if os.path.exists(output_file):
-    #     users_df = pd.read_csv(output_file)
-    #     if users_df.iloc[0]["name"].lower() == root_user_name.lower():
-    #         logger.info(f'found existing dataset at {output_file} which will be used to start the tree.')
-    #         users = User.from_df(users_df)
-    #         root_user = users.pop(0)
-    #     else:
-    #         root_user = User.from_name(user_name=root_user_name)
-    #         users = [root_user]
-    # else:
     root_user = User.from_name(user_name=root_user_name)
     assert root_user.lang == "es", "Only Spanish users can be fetched."
     users = [root_user]
@@ -91,40 +99,65 @@ def make_data_from_root_user(root_user_name,output_file=None,max_users=None):
             # Remove the streamers that are not in Spanish
             users = [user for user in users if user.lang == "es"]            
             if itt % 10 == 0:
-                logger.info(f"Iteration {itt+1} - {len(users)+len(users_with_retrieved_follows)} users have been retrieved until now.")
+                logger.info(f"Iteration {itt+1}: {len(users)+len(users_with_retrieved_follows)} users have been retrieved until now.")
                 if output_file:
                     logger.info("writing dataset to file {}".format(output_file))
-                    pd.DataFrame(users_with_retrieved_follows+users).drop_duplicates(subset=["id"],keep="first").to_csv(output_file,index=False)
+                    pd.DataFrame(users_with_retrieved_follows+users)\
+                        .drop_duplicates(subset=["id"],keep="first")\
+                            .dropna(subset="broadcaster_type")\
+                                .reset_index(drop=True).to_csv(output_file,index=False)
             itt += 1
         else:
-            logger.info(f"max_users reached. {len(users)+len(users_with_retrieved_follows)} users were retrieved.")
+            logger.info(f"max_users reached at iteration {itt}. {len(users)+len(users_with_retrieved_follows)} users were retrieved.")
     except KeyboardInterrupt:
         logger.info("KeyboardInterrupt received. Stopping the program..")  
-        logger.info(f"A total of {len(users)+len(users_with_retrieved_follows)} users were retrieved.")    
+        logger.info(f"A total of {len(users)+len(users_with_retrieved_follows)} users were retrieved. Number of iterations: {itt}")
     
-    df =  pd.DataFrame(users_with_retrieved_follows+users).drop_duplicates(subset=["id"],keep="first")
+    df =  pd.DataFrame(users_with_retrieved_follows+users)\
+            .drop_duplicates(subset=["id"],keep="first")\
+                .dropna(subset="broadcaster_type")\
+                    .reset_index(drop=True)
     if output_file:
         logger.info("writing dataset to file before stopping...")
         df.to_csv(output_file,index=False)
     return df
 
-def extract_follows_from_users_df(df_or_file,output_file=None):
+def extract_follows_from_users_df(df_or_file,output_file=None,only_top=1000):
     """
     Extract the follows from a dataframe of users and returns the same dataframe but with the follows of each user.
+
+    Parameters
+    ----------
+    df_or_file : pd.DataFrame or str
+        The dataframe or the path to the dataframe to be used.
+    output_file : str
+        The path to the output file.
+    only_top : int
+        If not None, only the follows of the top {only_top} users will be fetched and returned. Otherwise, all the follows will be fetched.
     """
     if isinstance(df_or_file,str):
         df = pd.read_csv(df_or_file,lineterminator='\n')
     else:
         df = df_or_file
     users_of_df = User.from_df(df.drop_duplicates(subset=['name','id'],keep='first'))
-    for i,user in enumerate(users_of_df):
-        if user.user_follows is None:
-            user.get_follows()
-        if (i+1) % 10 == 0 or i==0:
-            logger.info(f"{i+1}/{len(users_of_df)} have been processed.")
-            if output_file:
-                logger.info("writing dataset to file {}".format(output_file))
-                pd.DataFrame(users_of_df).drop_duplicates(subset=["id"],keep="first").to_csv(output_file,index=False)
+    users_sorted = sorted(users_of_df,key=lambda x: x.view_count if x.user_follows is None else 0,reverse=True)
+    only_top = len(users_of_df) if only_top is None or only_top>len(df) else only_top
+    logger.info(f'Extracting all the follows of the top {only_top}/{len(df)} users in the dataset (by view count)...')
+    try:
+        for i,user in enumerate(users_sorted[:only_top]):
+            if user.user_follows is None:
+                user.get_follows()
+            if (i+1) % 10 == 0 or i==0:
+                logger.info(f"{i+1}/{only_top} have been processed.")
+                if output_file:
+                    logger.info("writing dataset to file {}".format(output_file))
+                    pd.DataFrame(users_of_df).drop_duplicates(subset=["id"],keep="first").to_csv(output_file,index=False)
+    except KeyboardInterrupt:
+        logger.info("KeyboardInterrupt received. Stopping the program..")
+    df = pd.DataFrame(users_of_df).drop_duplicates(subset=["id"],keep="first")
+    if output_file:
+        logger.info("writing dataset to file before stopping...")
+        df.to_csv(output_file,index=False)
     return pd.DataFrame(users_of_df)
 
 
