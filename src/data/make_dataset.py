@@ -59,6 +59,7 @@ def make_data_from_root_user(root_user_name,output_filepath=None,max_users=None,
     #         users = [root_user]
     # else:
     root_user = User.from_name(user_name=root_user_name)
+    assert root_user.lang == "es", "Only Spanish users are fetched."
     users = [root_user]
     users_with_retrieved_follows = []
     itt = 0
@@ -67,13 +68,14 @@ def make_data_from_root_user(root_user_name,output_filepath=None,max_users=None,
         while len(users)>0 and (max_users is None or (len(users)+len(users_with_retrieved_follows))<max_users):            
             rand_user_ind = np.random.randint(0,len(users))
             rand_user = users.pop(rand_user_ind)
-            while rand_user.lang!="es":
-                # if the user isn't spanish, we will try with another user
-                rand_user_ind = np.random.randint(0,len(users))
-                rand_user = users.pop(rand_user_ind)
+            # while rand_user.lang!="es":
+            #     # if the user isn't spanish, we will try with another user
+            #     rand_user_ind = np.random.randint(0,len(users))
+            #     rand_user = users.pop(rand_user_ind)
             user_follows_ids = rand_user.follows
             new_users = User.get_users(user_follows_ids)
             users = list(set(users).union(set(new_users)) - set(users_with_retrieved_follows))
+            users = [user for user in users if user.lang == "es"]
             users_with_retrieved_follows = users_with_retrieved_follows + [rand_user]
             if itt % 10 == 0:
                 logger.info(f"Iteration {itt+1} - {len(users)+len(users_with_retrieved_follows)} users have been retrieved until now.")
