@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from .twitch_utils import connect_to_twitch_endpoint
 
 from typing import List, Optional, Union
@@ -6,22 +6,27 @@ from functools import lru_cache
 
 @dataclass
 class User:
-    id: str
-    name: str
-    # num_followers: int = 0
+    id: str = None
+    name: str = None
+    # num_followers: int = field(init=False)
     broadcaster_type: str = None 
     description: str = None
     lang: str = None
-    # user_follows: list = None
     last_game_played_name: str = None
     view_count: int = 0 
     profile_image_url: str = None 
     created_at: str = None  # Datetime String -> /user
 
+    def __hash__(self):
+        return hash(self.id)
+
     @property
     @lru_cache()
-    def user_follows(self):
-        return User.get_user_follows(self.id)
+    def follows(self):
+        """
+        (cached property) Returns a list of all users this user follows 
+        """
+        return User.get_user_follows(self)
 
     @staticmethod
     @lru_cache()
@@ -58,13 +63,13 @@ class User:
         
         return follows
     
-    def get_follows(self):
-        return self.user_follows
-    
     @property
     @lru_cache()
     def num_followers(self):
         return User.get_num_followers(self.id)
+    
+    # @num_followers.setter
+    # def num_followers(self, _):pass
 
     @staticmethod
     @lru_cache()
@@ -112,14 +117,19 @@ class User:
                 user_id = user_dict.get("id")
                 created_at = user_dict.get("created_at")
                 description = user_dict.get("description")
+                broadcaster_type = user_dict.get("broadcaster_type")
+                profile_image_url = user_dict.get("profile_image_url")
                 view_count = user_dict.get("view_count")
                 lang = channel_data[i].get("broadcaster_language")
                 last_game_played_name = channel_data[i].get("game_name")
+                
 
                 user = User(
                     id=user_id,
                     name=user_name,
                     created_at=created_at,
+                    broadcaster_type=broadcaster_type,
+                    profile_image_url=profile_image_url,
                     description=description,
                     view_count=view_count,
                     lang=lang,
@@ -131,18 +141,49 @@ class User:
     
     @staticmethod
     @lru_cache()
-    def get_user(user_id=None,user_name=None):
+    def from_id(user_id=None):
         """
-        Use either user id or user name to retrieve the user's data and make a User object.
+        Use a user id to retrieve the user's data and make a User object.
         """
-        if user_id is None and user_name is None:
-            raise Exception("No user id or user name provided")
         if user_id is None:
-            return User.get_users(user_names=[user_name])[0]
+            raise Exception("No user id or user name provided")
         
         return User.get_users(user_ids=[user_id])[0]
     
-    def make_user(self):
+    @staticmethod
+    @lru_cache()
+    def from_name(user_name=None):
+        """
+        Use a user name to retrieve the user's data and make a User object.
+        """
+        if user_name is None:
+            raise Exception("No user id or user name provided")
+        
+        return User.get_users(user_names=[user_name])[0]
+
+    
+    @staticmethod
+    def from_df(df):
+        """
+        Returns a list of User objects from a pandas dataframe.
+        """
+        users_list = []
+        for i, row in df.iterrows():
+            user = User(
+                id=row["id"],
+                name=row["name"],
+                created_at=row["created_at"],
+                description=row["description"],
+                view_count=row["view_count"],
+                lang=row["lang"],
+                last_game_played_name=row["last_game_played_name"],
+                profile_image_url=row["profile_image_url"],
+                broadcaster_type=row["broadcaster_type"],                
+            )
+            users_list.append(user)
+        return users_list
+    
+    def retrieve_info(self):
         """
         Uses this object's user id or name to retrieve the user's data
         and updates this object's attributes accordingly.

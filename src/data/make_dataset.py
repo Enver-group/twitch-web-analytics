@@ -3,17 +3,81 @@ import click
 import logging
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
+import pandas as pd
+import numpy as np
 
+from ..user import User
+
+logging.basicConfig()
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 @click.command()
-@click.argument('input_filepath', type=click.Path(exists=True))
-@click.argument('output_filepath', type=click.Path())
-def main(input_filepath, output_filepath):
-    """ Runs data processing scripts to turn raw data from (../raw) into
-        cleaned data ready to be analyzed (saved in ../processed).
+@click.argument('output_filepath', type=click.Path(),default="data/data.csv",required=False)
+@click.option('-r', '--roor_user_name', is_flag=False, default="ibai", is_eager=True)
+@click.option('-m', '--max_users', is_flag=False, default=10000, is_eager=True)
+def main(roor_user_name="ibai",output_filepath=None,max_users=10000):
+    """ Runs data processing scripts to obtain the data  and save it to the /data directory
     """
-    logger = logging.getLogger(__name__)
-    logger.info('making final data set from raw data')
+    logger.info(f'making dataset of followers from initial user {roor_user_name}.')
+
+    make_data_from_root_user(root_user_name=roor_user_name,output_filepath=output_filepath,max_users=max_users)
+
+    if output_filepath:
+        logger.info(f'writing dataset to output file {output_filepath}')
+
+
+def make_data_from_root_user(root_user_name,output_filepath=None,max_users=None):
+    """
+    Generate a dataset from a tree of twitch users follows starting from the follows of the given root user until it is manually stopped.
+
+    Parameters
+    ----------
+    root_user_name : str
+        The name of the root user to start the tree from.
+    
+    Returns
+    -------
+    pd.DataFrame : list
+        A list of all the users in the tree.
+    """
+    logger.info(f'Collecting users from a tree of twitch users follows starting from the follows of the user: {root_user_name}')
+    if max_users:
+        logger.info(f'New users will be fetched until {max_users} users are reached or the program is manually interrupted.')
+    else:
+        logger.info(f'New users will be fetched until the program is manually interrupted. Use ctrl+c when you wish to stop.')
+    # Get the root user
+    root_user = User.from_name(user_name=root_user_name)
+    root_follows_ids = User.get_user_follows(root_user)
+    users = User.get_users(root_follows_ids)
+    users_with_retrieved_follows = [root_user]
+    itt = 0
+    try:
+        logger.info(f"{len(users)} users from the root user's follows have been collected. The tree will be expanded randomly starting from one of them.")        
+        while len(users)>0 and (max_users is None or (len(users)+len(users_with_retrieved_follows))<max_users):            
+            rand_user_ind = np.random.randint(0,len(users))
+            rand_user = users.pop(rand_user_ind)
+            user_follows_ids = User.get_user_follows(rand_user)
+            new_users = User.get_users(user_follows_ids)
+            users = list(set(users).union(set(new_users)) - set(users_with_retrieved_follows))
+            users_with_retrieved_follows = users_with_retrieved_follows + [rand_user]
+            if itt % 50 == 0:
+                logger.info(f"{len(users)+len(users_with_retrieved_follows)} users have been retrieved until now.")
+                if output_filepath:
+                    logger.info("writing dataset to file {}".format(output_filepath))
+                    pd.DataFrame(users_with_retrieved_follows+users).to_csv(output_filepath,index=False)
+            itt += 1
+        else:
+            logger.info(f"max_users reached. {len(users)+len(users_with_retrieved_follows)} users were retrieved.")
+    except KeyboardInterrupt:
+        logger.info("KeyboardInterrupt received. Stopping the program..")  
+        
+    df = pd.DataFrame(users_with_retrieved_follows+users).to_csv(output_filepath,index=False)
+    if output_filepath:
+        logger.info("writing dataset to file before stopping...")
+        pd.DataFrame(users_with_retrieved_follows+users).to_csv(output_filepath,index=False)
+    return df
 
 
 if __name__ == '__main__':

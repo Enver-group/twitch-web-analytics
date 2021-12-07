@@ -15,7 +15,7 @@ AutParams = {
 }
 
 
-def connect_to_twitch_endpoint(endpoint, params=None):
+def connect_to_twitch_endpoint(endpoint, params=None, **kwargs):
 
     url = f"https://api.twitch.tv/helix/{endpoint}"
     AutCall = requests.post(url=authURL, params=AutParams)
@@ -26,6 +26,10 @@ def connect_to_twitch_endpoint(endpoint, params=None):
         'Authorization':  "Bearer " + access_token,
     }
 
+    if not params:
+        params = {}
+    
+    params.update(kwargs)
     response = requests.get(url, headers=head, params=params)
 
     if response.status_code != 200:
