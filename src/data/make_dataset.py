@@ -13,26 +13,36 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+"""
+Extract the data required to carry the analysis of hispanic twitch streamers
+
+Usage: 
+----------
+```
+python -m src.data --output_file "data/data.csv" --max_users 10000 --root_user "rubius" -f
+```
+"""
+
 @click.command()
-@click.argument('output_filepath', type=click.Path(),default="data/data.csv",required=False)
-@click.option('-r', '--roor_user_name', is_flag=False, default="ibai", is_eager=True)
-@click.option('-m', '--max_users', is_flag=False, default=10000, is_eager=True)
+@click.option("-o",'--output_file', type=click.Path(),default="data/data.csv",required=False)
+@click.option('-r', '--root_user', is_flag=False, default="ibai", is_eager=True)
+@click.option('-n', '--max_users', is_flag=False, default=10000, is_eager=True)
 @click.option('-f', '--get_all_follows', is_flag=True, default=False, is_eager=True)
-def main(roor_user_name="ibai",output_filepath=None,max_users=10000,get_all_follows=False):
+def main(root_user="ibai",output_file="data/data.csv",max_users=10000,get_all_follows=False):
     """ Runs data processing scripts to obtain the data  and save it to the /data directory
     """
-    logger.info(f'making dataset of followers from initial user {roor_user_name}.')
+    logger.info(f'making dataset of followers from initial user "{root_user}".')
 
-    df = make_data_from_root_user(root_user_name=roor_user_name,output_filepath=output_filepath,max_users=max_users)
+    df = make_data_from_root_user(root_user_name=root_user,output_file=output_file,max_users=max_users)
     if get_all_follows:
         logger.info(f'Extracting all the follows of the users in the dataset...')
-        df = extract_follows_from_users_df(df)
+        df = extract_follows_from_users_df(df,output_file=output_file)
 
-    if output_filepath:
-        logger.info(f'writing dataset to output file {output_filepath}')
-        df.drop_duplicates(subset=["id"],keep="first").to_csv(output_filepath,index=False)
+    if output_file:
+        logger.info(f'writing dataset to output file {output_file}')
+        df.drop_duplicates(subset=["id"],keep="first").to_csv(output_file,index=False)
 
-def make_data_from_root_user(root_user_name,output_filepath=None,max_users=None):
+def make_data_from_root_user(root_user_name,output_file=None,max_users=None):
     """
     Generate a dataset from a tree of twitch users follows starting from the follows of the given root user until it is manually stopped.
 
@@ -52,10 +62,10 @@ def make_data_from_root_user(root_user_name,output_filepath=None,max_users=None)
     else:
         logger.info(f'New users will be fetched until the program is manually interrupted. Use ctrl+c when you wish to stop.')
     # Get the root user
-    # if os.path.exists(output_filepath):
-    #     users_df = pd.read_csv(output_filepath)
+    # if os.path.exists(output_file):
+    #     users_df = pd.read_csv(output_file)
     #     if users_df.iloc[0]["name"].lower() == root_user_name.lower():
-    #         logger.info(f'found existing dataset at {output_filepath} which will be used to start the tree.')
+    #         logger.info(f'found existing dataset at {output_file} which will be used to start the tree.')
     #         users = User.from_df(users_df)
     #         root_user = users.pop(0)
     #     else:
@@ -82,9 +92,9 @@ def make_data_from_root_user(root_user_name,output_filepath=None,max_users=None)
             users = [user for user in users if user.lang == "es"]            
             if itt % 10 == 0:
                 logger.info(f"Iteration {itt+1} - {len(users)+len(users_with_retrieved_follows)} users have been retrieved until now.")
-                if output_filepath:
-                    logger.info("writing dataset to file {}".format(output_filepath))
-                    pd.DataFrame(users_with_retrieved_follows+users).drop_duplicates(subset=["id"],keep="first").to_csv(output_filepath,index=False)
+                if output_file:
+                    logger.info("writing dataset to file {}".format(output_file))
+                    pd.DataFrame(users_with_retrieved_follows+users).drop_duplicates(subset=["id"],keep="first").to_csv(output_file,index=False)
             itt += 1
         else:
             logger.info(f"max_users reached. {len(users)+len(users_with_retrieved_follows)} users were retrieved.")
@@ -92,13 +102,13 @@ def make_data_from_root_user(root_user_name,output_filepath=None,max_users=None)
         logger.info("KeyboardInterrupt received. Stopping the program..")  
         logger.info(f"A total of {len(users)+len(users_with_retrieved_follows)} users were retrieved.")    
     
-    df =  pd.DataFrame(users_with_retrieved_follows+users).drop_duplicates(subset=["id"],keep="first").to_csv(output_filepath,index=False)
-    if output_filepath:
+    df =  pd.DataFrame(users_with_retrieved_follows+users).drop_duplicates(subset=["id"],keep="first")
+    if output_file:
         logger.info("writing dataset to file before stopping...")
-        pd.DataFrame(users_with_retrieved_follows+users).drop_duplicates(subset=["id"],keep="first").to_csv(output_filepath,index=False)
+        df.to_csv(output_file,index=False)
     return df
 
-def extract_follows_from_users_df(df_or_file):
+def extract_follows_from_users_df(df_or_file,output_file=None):
     """
     Extract the follows from a dataframe of users and returns the same dataframe but with the follows of each user.
     """
@@ -107,9 +117,14 @@ def extract_follows_from_users_df(df_or_file):
     else:
         df = df_or_file
     users_of_df = User.from_df(df.drop_duplicates(subset=['name','id'],keep='first'))
-    for user in users_of_df:
+    for i,user in enumerate(users_of_df):
         if user.user_follows is None:
             user.get_follows()
+        if (i+1) % 10 == 0 or i==0:
+            logger.info(f"{i+1}/{len(users_of_df)} have been processed.")
+            if output_file:
+                logger.info("writing dataset to file {}".format(output_file))
+                pd.DataFrame(users_of_df).drop_duplicates(subset=["id"],keep="first").to_csv(output_file,index=False)
     return pd.DataFrame(users_of_df)
 
 
