@@ -62,7 +62,7 @@ def make_data_from_root_user(root_user_name,output_filepath=None,max_users=None)
             new_users = User.get_users(user_follows_ids)
             users = list(set(users).union(set(new_users)) - set(users_with_retrieved_follows))
             users_with_retrieved_follows = users_with_retrieved_follows + [rand_user]
-            if itt % 50 == 0:
+            if itt % 10 == 0:
                 logger.info(f"{len(users)+len(users_with_retrieved_follows)} users have been retrieved until now.")
                 if output_filepath:
                     logger.info("writing dataset to file {}".format(output_filepath))
