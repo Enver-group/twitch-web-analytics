@@ -16,6 +16,7 @@ class User:
     view_count: int = 0 
     profile_image_url: str = None 
     created_at: str = None  # Datetime String -> /user
+    follows : list = field(init=False)
 
     def __hash__(self):
         return hash(self.id)
@@ -27,6 +28,9 @@ class User:
         (cached property) Returns a list of all users this user follows 
         """
         return User.get_user_follows(self)
+    
+    @follows.setter
+    def follows(self, _):pass
 
     @staticmethod
     @lru_cache()

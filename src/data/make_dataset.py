@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import click
-import logging
+import os, logging
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 import pandas as pd
@@ -48,13 +48,22 @@ def make_data_from_root_user(root_user_name,output_filepath=None,max_users=None)
     else:
         logger.info(f'New users will be fetched until the program is manually interrupted. Use ctrl+c when you wish to stop.')
     # Get the root user
-    root_user = User.from_name(user_name=root_user_name)
-    root_follows_ids = User.get_user_follows(root_user)
-    users = User.get_users(root_follows_ids)
-    users_with_retrieved_follows = [root_user]
+    if os.path.exists(output_filepath):
+        users_df = pd.read_csv(output_filepath)
+        if users_df.iloc[0]["name"] == root_user_name:
+            logger.info(f'found existing dataset at {output_filepath} which will be used to start the tree.')
+            users = User.from_df(users_df)
+            root_user = users.pop(0)
+        else:
+            root_user = User.from_name(user_name=root_user_name)
+            users = [root_user]
+    else:
+        root_user = User.from_name(user_name=root_user_name)
+        users = [root_user]
+    users_with_retrieved_follows = []
     itt = 0
     try:
-        logger.info(f"{len(users)} users from the root user's follows have been collected. The tree will be expanded randomly starting from one of them.")        
+        logger.info(f"The tree will be expanded randomly starting from the root.")        
         while len(users)>0 and (max_users is None or (len(users)+len(users_with_retrieved_follows))<max_users):            
             rand_user_ind = np.random.randint(0,len(users))
             rand_user = users.pop(rand_user_ind)
@@ -63,7 +72,7 @@ def make_data_from_root_user(root_user_name,output_filepath=None,max_users=None)
             users = list(set(users).union(set(new_users)) - set(users_with_retrieved_follows))
             users_with_retrieved_follows = users_with_retrieved_follows + [rand_user]
             if itt % 10 == 0:
-                logger.info(f"{len(users)+len(users_with_retrieved_follows)} users have been retrieved until now.")
+                logger.info(f"Iteration {itt+1} - {len(users)+len(users_with_retrieved_follows)} users have been retrieved until now.")
                 if output_filepath:
                     logger.info("writing dataset to file {}".format(output_filepath))
                     pd.DataFrame(users_with_retrieved_follows+users).to_csv(output_filepath,index=False)
@@ -72,7 +81,8 @@ def make_data_from_root_user(root_user_name,output_filepath=None,max_users=None)
             logger.info(f"max_users reached. {len(users)+len(users_with_retrieved_follows)} users were retrieved.")
     except KeyboardInterrupt:
         logger.info("KeyboardInterrupt received. Stopping the program..")  
-        
+        logger.info(f"A total of {len(users)+len(users_with_retrieved_follows)} users were retrieved.")    
+    
     df = pd.DataFrame(users_with_retrieved_follows+users).to_csv(output_filepath,index=False)
     if output_filepath:
         logger.info("writing dataset to file before stopping...")
