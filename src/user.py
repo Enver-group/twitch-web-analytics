@@ -125,7 +125,7 @@ class User:
                 f'channels?broadcaster_id={user_channels_str}')
             channel_data = resp_channel["data"]
             for i, user_dict in enumerate(user_data):
-                user_name = user_dict.get("login")
+                user_name = user_dict.get("display_name")
                 user_id = user_dict.get("id")
                 created_at = user_dict.get("created_at")
                 description = user_dict.get("description")
