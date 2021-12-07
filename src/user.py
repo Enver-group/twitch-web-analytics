@@ -22,10 +22,24 @@ class User:
     user_follows : list = None
 
     def __hash__(self):
+        # Used for storing users in a set
         return hash(self.id)
     
     def __repr__(self):
+        # to be used in debugging or displaying the object
         return f"User(name={self.name}, id={self.id}, created_at={self.created_at}, view_count={self.view_count}, num_followers={self.num_followers})"
+
+    def __eq__(self, __o: object) -> bool:
+        # Compares if two users are the same based on their id
+        if isinstance(__o, User):
+            return self.id == __o.id
+        return False
+    
+    def __lt__(self, other):
+        # Used for sorting users by their view count
+        if isinstance(other, User):
+            return self.view_count < other.view_count
+        raise TypeError("Cannot compare User to {}".format(type(other)))        
 
     @property
     @lru_cache()
@@ -60,8 +74,12 @@ class User:
             user_id = user_or_id.id
         else:
             user_id = user_or_id
-        follows_from_resp = connect_to_twitch_endpoint(
-            "users/follows", params=dict(from_id=user_id, first=100))
+        try:
+            follows_from_resp = connect_to_twitch_endpoint(
+                "users/follows", params=dict(from_id=user_id, first=100))
+        except Exception as e:
+            print(e)
+            return []
         follows = [follow["to_id"]
                     for follow in follows_from_resp.get("data")]
         while follows_from_resp.get("pagination"):

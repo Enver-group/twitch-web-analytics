@@ -96,13 +96,19 @@ def make_data_from_root_user(root_user_name,output_file=None,max_users=None):
             # Get the next user randomly from the list of users
             rand_user_ind = np.random.randint(0,len(users))
             rand_user = users.pop(rand_user_ind)
+            if rand_user.name.lower() == "ibai":
+                continue
             # Expand the list of streamers from the follows of the random user
-            user_follows_ids = rand_user.follows
-            new_users = User.get_users(user_follows_ids)
+            try:
+                user_follows_ids = rand_user.follows
+                new_users = User.get_users(user_follows_ids)
+            except Exception as e:
+                logger.error(f"Error while fetching follows of user {rand_user.name} from the API. Error: {e}")
+                continue
             users_with_retrieved_follows.append(rand_user)
-            users = list(set(users).union(set(new_users)) - set(users_with_retrieved_follows))
-            # Remove the streamers that are not in Spanish
-            users = [user for user in users if user.lang == "es"]            
+            users = list(set(users).union(set(new_users)))
+            # Remove users that are not in Spanish streamers
+            users = [user for user in users if user.lang == "es" and user.broadcaster_type and user not in users_with_retrieved_follows]
             if itt % 10 == 0:
                 logger.info(f"Iteration {itt+1}: {len(users)+len(users_with_retrieved_follows)} users have been retrieved until now.")
                 if output_file:
