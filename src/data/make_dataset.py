@@ -28,7 +28,7 @@ def main(roor_user_name="ibai",output_filepath=None,max_users=10000):
         logger.info(f'writing dataset to output file {output_filepath}')
 
 
-def make_data_from_root_user(root_user_name,output_filepath=None,max_users=None):
+def make_data_from_root_user(root_user_name,output_filepath=None,max_users=None,):
     """
     Generate a dataset from a tree of twitch users follows starting from the follows of the given root user until it is manually stopped.
 
@@ -48,18 +48,18 @@ def make_data_from_root_user(root_user_name,output_filepath=None,max_users=None)
     else:
         logger.info(f'New users will be fetched until the program is manually interrupted. Use ctrl+c when you wish to stop.')
     # Get the root user
-    if os.path.exists(output_filepath):
-        users_df = pd.read_csv(output_filepath)
-        if users_df.iloc[0]["name"] == root_user_name:
-            logger.info(f'found existing dataset at {output_filepath} which will be used to start the tree.')
-            users = User.from_df(users_df)
-            root_user = users.pop(0)
-        else:
-            root_user = User.from_name(user_name=root_user_name)
-            users = [root_user]
-    else:
-        root_user = User.from_name(user_name=root_user_name)
-        users = [root_user]
+    # if os.path.exists(output_filepath):
+    #     users_df = pd.read_csv(output_filepath)
+    #     if users_df.iloc[0]["name"] == root_user_name:
+    #         logger.info(f'found existing dataset at {output_filepath} which will be used to start the tree.')
+    #         users = User.from_df(users_df)
+    #         root_user = users.pop(0)
+    #     else:
+    #         root_user = User.from_name(user_name=root_user_name)
+    #         users = [root_user]
+    # else:
+    root_user = User.from_name(user_name=root_user_name)
+    users = [root_user]
     users_with_retrieved_follows = []
     itt = 0
     try:
@@ -67,6 +67,10 @@ def make_data_from_root_user(root_user_name,output_filepath=None,max_users=None)
         while len(users)>0 and (max_users is None or (len(users)+len(users_with_retrieved_follows))<max_users):            
             rand_user_ind = np.random.randint(0,len(users))
             rand_user = users.pop(rand_user_ind)
+            while rand_user.lang!="es":
+                # if the user isn't spanish, we will try with another user
+                rand_user_ind = np.random.randint(0,len(users))
+                rand_user = users.pop(rand_user_ind)
             user_follows_ids = rand_user.follows
             new_users = User.get_users(user_follows_ids)
             users = list(set(users).union(set(new_users)) - set(users_with_retrieved_follows))

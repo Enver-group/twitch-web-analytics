@@ -132,9 +132,13 @@ class User:
                 broadcaster_type = user_dict.get("broadcaster_type")
                 profile_image_url = user_dict.get("profile_image_url")
                 view_count = user_dict.get("view_count")
-                lang = channel_data[i].get("broadcaster_language")
-                last_game_played_name = channel_data[i].get("game_name")
-                
+                user_channel_data = [channel for channel in channel_data if channel.get("broadcaster_id") == user_id]
+                if user_channel_data:
+                    lang = user_channel_data[0].get("broadcaster_language")
+                    last_game_played_name = user_channel_data[0].get("game_name")
+                else:
+                    lang = None
+                    last_game_played_name = None                
 
                 user = User(
                     id=user_id,
