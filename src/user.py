@@ -4,11 +4,14 @@ from .twitch_utils import connect_to_twitch_endpoint
 from typing import List, Optional, Union
 from functools import lru_cache
 
+from pandas import isnull
+import pandas as pd
+
 @dataclass
 class User:
     id: str = None
     name: str = None
-    # num_followers: int = field(init=False)
+    num_followers: int = None
     broadcaster_type: str = None 
     description: str = None
     lang: str = None
@@ -20,6 +23,9 @@ class User:
 
     def __hash__(self):
         return hash(self.id)
+    
+    def __repr__(self):
+        return f"User(name={self.name}, id={self.id}, created_at={self.created_at}, view_count={self.view_count}, num_followers={self.num_followers})"
 
     @property
     @lru_cache()
@@ -27,7 +33,7 @@ class User:
         """
         (cached property) Returns a list of all users this user follows 
         """
-        if self.user_follows:
+        if not isnull(self.user_follows):
             return self.user_follows
         self.user_follows = User.get_user_follows(self)
         return self.user_follows
@@ -36,10 +42,9 @@ class User:
         """
         Returns a list of all users this user follows
         """
-        if self.user_follows:
+        if not isnull(self.user_follows):
             return self.user_follows
-        self.user_follows = self.user_follows
-        return self.user_follows
+        return self.follows
 
     @staticmethod
     @lru_cache()
@@ -75,17 +80,20 @@ class User:
                 break
         return follows
     
-    @property
-    @lru_cache()
-    def num_followers(self):
-        return User.get_num_followers(self.id)
+    # @property
+    # @lru_cache()
+    def get_num_followers(self):
+        if not isnull(self.num_followers):
+            return self.num_followers
+        self.num_followers = User.get_num_followers(self)
+        return self.num_followers
     
     # @num_followers.setter
     # def num_followers(self, _):pass
 
     @staticmethod
     @lru_cache()
-    def get_num_followers(user_or_id:Union[object,str]):
+    def get_num_followers_of_user(user_or_id:Union[object,str]):
         """
         Returns the number of followers of the User object or the user with the given id.
 
@@ -184,7 +192,7 @@ class User:
         Returns a list of User objects from a pandas dataframe.
         """
         users_list = []
-        for i, row in df.iterrows():
+        for i, row in df.where(pd.notnull(df), None).iterrows():
             user = User(
                 id=row["id"],
                 name=row["name"],
@@ -194,7 +202,8 @@ class User:
                 lang=row["lang"],
                 last_game_played_name=row["last_game_played_name"],
                 profile_image_url=row["profile_image_url"],
-                broadcaster_type=row["broadcaster_type"],                
+                broadcaster_type=row["broadcaster_type"],            
+                user_follows=row["user_follows"],    
             )
             users_list.append(user)
         return users_list
