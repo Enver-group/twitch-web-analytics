@@ -67,7 +67,7 @@ def make_data_from_root_user(root_user_name,output_filepath=None,max_users=None)
         while len(users)>0 and (max_users is None or (len(users)+len(users_with_retrieved_follows))<max_users):            
             rand_user_ind = np.random.randint(0,len(users))
             rand_user = users.pop(rand_user_ind)
-            user_follows_ids = User.get_user_follows(rand_user)
+            user_follows_ids = rand_user.follows
             new_users = User.get_users(user_follows_ids)
             users = list(set(users).union(set(new_users)) - set(users_with_retrieved_follows))
             users_with_retrieved_follows = users_with_retrieved_follows + [rand_user]

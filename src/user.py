@@ -16,7 +16,7 @@ class User:
     view_count: int = 0 
     profile_image_url: str = None 
     created_at: str = None  # Datetime String -> /user
-    follows : list = field(init=False)
+    user_follows : list = None
 
     def __hash__(self):
         return hash(self.id)
@@ -27,10 +27,19 @@ class User:
         """
         (cached property) Returns a list of all users this user follows 
         """
-        return User.get_user_follows(self)
+        if self.user_follows:
+            return self.user_follows
+        self.user_follows = User.get_user_follows(self)
+        return self.user_follows
     
-    @follows.setter
-    def follows(self, _):pass
+    def get_follows(self):
+        """
+        Returns a list of all users this user follows
+        """
+        if self.user_follows:
+            return self.user_follows
+        self.user_follows = self.user_follows
+        return self.user_follows
 
     @staticmethod
     @lru_cache()
@@ -64,7 +73,6 @@ class User:
             except Exception as e:
                 print(e)
                 break
-        
         return follows
     
     @property
