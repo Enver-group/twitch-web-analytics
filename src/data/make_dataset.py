@@ -104,7 +104,7 @@ def make_data_from_root_user(root_user_name,output_file=None,max_users=None):
                     logger.info("writing dataset to file {}".format(output_file))
                     pd.DataFrame(users_with_retrieved_follows+users)\
                         .drop_duplicates(subset=["id"],keep="first")\
-                            .dropna(subset="broadcaster_type")\
+                            .dropna(subset=["broadcaster_type"])\
                                 .reset_index(drop=True).to_csv(output_file,index=False)
             itt += 1
         else:
@@ -115,7 +115,7 @@ def make_data_from_root_user(root_user_name,output_file=None,max_users=None):
     
     df =  pd.DataFrame(users_with_retrieved_follows+users)\
             .drop_duplicates(subset=["id"],keep="first")\
-                .dropna(subset="broadcaster_type")\
+                .dropna(subset=["broadcaster_type"])\
                     .reset_index(drop=True)
     if output_file:
         logger.info("writing dataset to file before stopping...")
