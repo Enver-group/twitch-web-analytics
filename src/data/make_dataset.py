@@ -50,6 +50,11 @@ def main(root_user="ibai",output_file="data/data.csv",max_users=10000,get_follow
     """
     logger.info(f'making dataset of followers from initial user "{root_user}".')
 
+    # Verify that the directory of output_file exists and if not, create it
+    output_file_dir = Path(output_file).parent
+    if not os.path.exists(output_file_dir):
+        os.makedirs(output_file_dir)
+
     df = make_data_from_root_user(root_user_name=root_user,output_file=output_file,max_users=max_users)
 
     if get_follows_of_top:
@@ -101,7 +106,7 @@ def make_data_from_root_user(root_user_name,output_file=None,max_users=None):
             if itt % 10 == 0:
                 logger.info(f"Iteration {itt+1}: {len(users)+len(users_with_retrieved_follows)} users have been retrieved until now.")
                 if output_file:
-                    logger.info("writing dataset to file {}".format(output_file))
+                    logger.info("writing dataset to {}".format(output_file))
                     pd.DataFrame(users_with_retrieved_follows+users)\
                         .drop_duplicates(subset=["id"],keep="first")\
                             .dropna(subset=["broadcaster_type"])\
