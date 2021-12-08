@@ -17,4 +17,5 @@ seaborn
 ipykernel
 fastprogress
 pyarrow
+networkx
 
