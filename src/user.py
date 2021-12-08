@@ -103,7 +103,7 @@ class User:
     def get_num_followers(self):
         if not isnull(self.num_followers):
             return self.num_followers
-        self.num_followers = User.get_num_followers(self)
+        self.num_followers = User.get_num_followers_of_user(self)
         return self.num_followers
     
     # @num_followers.setter

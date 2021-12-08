@@ -1,2 +1,2 @@
 from .make_dataset import make_data_from_root_user
-from .make_dataset import extract_follows_from_users_df
+from .make_dataset import extract_follows_from_users_df, extract_num_followers_from_users_df

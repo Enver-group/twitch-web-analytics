@@ -171,6 +171,53 @@ def extract_follows_from_users_df(df_or_file,output_file=None,only_top=1000):
         df.to_csv(output_file,index=False)
     return pd.DataFrame(users_of_df)
 
+def extract_num_followers_from_users_df(df_or_file,output_file=None,only_top=1000):
+    """
+    Extract the number of followers from a dataframe of users and returns the same dataframe
+
+    Parameters
+    ----------
+    df_or_file : pd.DataFrame or str
+        The dataframe or the path to the dataframe to be used.
+    output_file : str
+        The path to the output file.
+    only_top : int
+        If not None, only the num followers of the top {only_top} users will be fetched and returned. Otherwise, all the num_followers will be fetched.
+    """
+    if isinstance(df_or_file,str):
+        df = pd.read_csv(df_or_file,lineterminator='\n')
+    else:
+        df = df_or_file
+    users_of_df = User.from_df(df.drop_duplicates(subset=['name','id'],keep='first'))
+    users_sorted = sorted(users_of_df,key=lambda x: x.view_count if x.num_followers is None else 0,reverse=True)
+    only_top = len(users_of_df) if only_top is None or only_top>len(df) else only_top
+    logger.info(f'Extracting all the number of followers of the top {only_top}/{len(df)} users in the given dataframe (by view count)...')
+    try:
+        for i,user in enumerate(users_sorted[:only_top]):
+            if user.num_followers is None:
+                try:
+                    # Extract the number of followers from the API
+                    user.get_num_followers()
+                except Exception as e:
+                    # If the API fails, continue with the next user
+                    if isinstance(e,KeyboardInterrupt):
+                        logger.info("KeyboardInterrupt received. Stopping the program..")
+                        break
+                    logger.error(f"Error while getting the number of followers of {user.name}. Error: {e}")
+                    continue
+            if (i+1) % 10 == 0 or i==0: # Print the progress every 10 iterations
+                logger.info(f"{i+1}/{only_top} have been processed.")
+                if output_file: # Write the dataframe to file
+                    logger.info("writing dataset to file {}".format(output_file))
+                    pd.DataFrame(users_of_df).drop_duplicates(subset=["id"],keep="first").to_csv(output_file,index=False)
+    except KeyboardInterrupt:
+        logger.info("KeyboardInterrupt received. Stopping the program..")
+    df = pd.DataFrame(users_of_df).drop_duplicates(subset=["id"],keep="first")
+    if output_file:
+        logger.info("writing dataset to file before stopping...")
+        df.to_csv(output_file,index=False)
+    return df
+
 
 if __name__ == '__main__':
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
