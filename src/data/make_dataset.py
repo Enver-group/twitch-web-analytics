@@ -32,7 +32,8 @@ python -m src.data --output_file "data/data.csv" --max_users 10000 --root_user "
 @click.option('-r', '--root_user', is_flag=False, default="ibai", is_eager=True)
 @click.option('-n', '--max_users', is_flag=False, default=10000, is_eager=True)
 @click.option('-f', '--get_follows_of_top', default=-1, is_eager=True, type=int)
-def main(root_user="ibai",output_file="data/data.csv",max_users=10000,get_follows_of_top=0):
+@click.option('-f', '--get_num_followers_of_top', default=-1, is_eager=True, type=int)
+def main(root_user="ibai",output_file="data/data.csv",max_users=10000,get_follows_of_top=0,get_num_followers_of_top=0):
     """
     Runs data processing scripts to obtain the data  and save it to the /data directory
 
@@ -60,6 +61,10 @@ def main(root_user="ibai",output_file="data/data.csv",max_users=10000,get_follow
     if get_follows_of_top:
         only_top = len(df) if get_follows_of_top==-1 else get_follows_of_top
         df = extract_follows_from_users_df(df,output_file=output_file,only_top=only_top)
+     
+    if get_num_followers_of_top:
+        only_top = len(df) if get_num_followers_of_top==-1 else get_num_followers_of_top
+        df = extract_num_followers_from_users_df(df,output_file=output_file,only_top=only_top)
 
     if output_file:
         logger.info(f'writing dataset to output file {output_file}')
