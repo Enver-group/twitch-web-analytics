@@ -64,7 +64,8 @@ target/
 *.rdb
 
 # data directory
-data/
+data/*
+!*.feather
 
 # Pycharm
 .idea
