@@ -17,8 +17,8 @@ class User:
     lang: str = None
     last_game_played_name: str = None
     view_count: int = 0 
-    profile_image_url: str = None 
-    created_at: str = None  # Datetime String -> /user
+    profile_image_url: str = None
+    created_at: str = None
     user_follows : list = None
 
     def __hash__(self):
@@ -26,7 +26,7 @@ class User:
         return hash(self.id)
     
     def __repr__(self):
-        # to be used in debugging or displaying the object
+        # to be used in debugging or displaying the object. Uniqueness is checked by id
         return f"User(name={self.name}, id={self.id}, created_at={self.created_at}, view_count={self.view_count}, num_followers={self.num_followers})"
 
     def __eq__(self, __o: object) -> bool:
@@ -98,16 +98,11 @@ class User:
                 break
         return follows
     
-    # @property
-    # @lru_cache()
     def get_num_followers(self):
         if not isnull(self.num_followers):
             return self.num_followers
         self.num_followers = User.get_num_followers_of_user(self)
         return self.num_followers
-    
-    # @num_followers.setter
-    # def num_followers(self, _):pass
 
     @staticmethod
     @lru_cache()

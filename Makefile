@@ -27,7 +27,7 @@ requirements: test_environment
 
 ## Make Dataset
 data: requirements
-	$(PYTHON_INTERPRETER) -m src.data --root_user "ibai" --output_file "data/data.csv" --max_users 10000 --get_follows_of_top 1000
+	$(PYTHON_INTERPRETER) -m src.data --root_user "ibai" --output_file "data/data.csv" --max_users 10000 --get_follows_of_top 1000 --get_num_followers_of_top 1000
 
 ## Delete all compiled Python files
 clean:

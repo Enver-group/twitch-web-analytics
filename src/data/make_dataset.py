@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import click
 import os, logging
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
@@ -23,17 +22,11 @@ Extract the data required to carry the analysis of hispanic twitch streamers
 Usage: 
 ----------
 ```
-python -m src.data --output_file "data/data.csv" --max_users 10000 --root_user "ibai" --get_follows_of_top 1000
+python -m src.data --root_user "ibai" --output_file "data/data.csv" --max_users 10000 --get_follows_of_top 1000 --get_num_followers_of_top 1000
 ```
 """
 
-@click.command()
-@click.option("-o",'--output_file', type=click.Path(),default="data/data.csv",required=False)
-@click.option('-r', '--root_user', is_flag=False, default="ibai", is_eager=True)
-@click.option('-n', '--max_users', is_flag=False, default=10000, is_eager=True)
-@click.option('-f', '--get_follows_of_top', default=-1, is_eager=True, type=int)
-@click.option('-f', '--get_num_followers_of_top', default=-1, is_eager=True, type=int)
-def main(root_user="ibai",output_file="data/data.csv",max_users=10000,get_follows_of_top=0,get_num_followers_of_top=0):
+def make_dataset(root_user="ibai",output_file="data/data.csv",max_users=5000,get_follows_of_top=0,get_num_followers_of_top=0):
     """
     Runs data processing scripts to obtain the data  and save it to the /data directory
 
@@ -101,8 +94,6 @@ def make_data_from_root_user(root_user_name,output_file=None,max_users=None):
             # Get the next user randomly from the list of users
             rand_user_ind = np.random.randint(0,len(users))
             rand_user = users.pop(rand_user_ind)
-            if rand_user.name.lower() == "ibai":
-                continue
             # Expand the list of streamers from the follows of the random user
             try:
                 user_follows_ids = rand_user.follows
@@ -129,6 +120,10 @@ def make_data_from_root_user(root_user_name,output_file=None,max_users=None):
         logger.info("KeyboardInterrupt received. Stopping the program..")  
         logger.info(f"A total of {len(users)+len(users_with_retrieved_follows)} users were retrieved. Number of iterations: {itt}")
     
+    if len(users_with_retrieved_follows+users)==0:
+        logger.info("No users were retrieved. Exiting.")
+        return pd.DataFrame()
+
     df =  pd.DataFrame(users_with_retrieved_follows+users)\
             .drop_duplicates(subset=["id"],keep="first")\
                 .dropna(subset=["broadcaster_type"])\
@@ -188,6 +183,8 @@ def extract_num_followers_from_users_df(df_or_file,output_file=None,only_top=100
         The path to the output file.
     only_top : int
         If not None, only the num followers of the top {only_top} users will be fetched and returned. Otherwise, all the num_followers will be fetched.
+    print_every : int
+        The number of users that have been processed will be printed every print_every iterations.
     """
     if isinstance(df_or_file,str):
         df = pd.read_csv(df_or_file,lineterminator='\n')
@@ -235,4 +232,4 @@ if __name__ == '__main__':
     # load up the .env entries as environment variables
     load_dotenv(find_dotenv())
 
-    main()
+    make_dataset()
