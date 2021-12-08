@@ -138,7 +138,7 @@ def make_data_from_root_user(root_user_name,output_file=None,max_users=None):
         df.to_csv(output_file,index=False)
     return df
 
-def extract_follows_from_users_df(df_or_file,output_file=None,only_top=1000):
+def extract_follows_from_users_df(df_or_file,output_file=None,only_top=1000,print_every=10):
     """
     Extract the follows from a dataframe of users and returns the same dataframe but with the follows of each user.
 
@@ -163,7 +163,7 @@ def extract_follows_from_users_df(df_or_file,output_file=None,only_top=1000):
         for i,user in enumerate(users_sorted[:only_top]):
             if user.user_follows is None:
                 user.get_follows()
-            if (i+1) % 10 == 0 or i==0:
+            if (i+1) % print_every == 0 or i==0:
                 logger.info(f"{i+1}/{only_top} have been processed.")
                 if output_file:
                     logger.info("writing dataset to file {}".format(output_file))
@@ -176,7 +176,7 @@ def extract_follows_from_users_df(df_or_file,output_file=None,only_top=1000):
         df.to_csv(output_file,index=False)
     return pd.DataFrame(users_of_df)
 
-def extract_num_followers_from_users_df(df_or_file,output_file=None,only_top=1000):
+def extract_num_followers_from_users_df(df_or_file,output_file=None,only_top=1000,print_every=10):
     """
     Extract the number of followers from a dataframe of users and returns the same dataframe
 
@@ -210,7 +210,7 @@ def extract_num_followers_from_users_df(df_or_file,output_file=None,only_top=100
                         break
                     logger.error(f"Error while getting the number of followers of {user.name}. Error: {e}")
                     continue
-            if (i+1) % 10 == 0 or i==0: # Print the progress every 10 iterations
+            if (i+1) % print_every == 0 or i==0: # Print the progress every 10 iterations
                 logger.info(f"{i+1}/{only_top} have been processed.")
                 if output_file: # Write the dataframe to file
                     logger.info("writing dataset to file {}".format(output_file))
