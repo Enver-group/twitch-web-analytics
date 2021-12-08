@@ -33,7 +33,7 @@ def connect_to_twitch_endpoint(endpoint, params=None, **kwargs):
     response = requests.get(url, headers=head, params=params)
 
     if response.status_code != 200:
-        raise Exception(
+        raise  Exception(
             "Request to url {} returned an error: {} {}".format(
                 response.url, response.status_code, response.text
             )
