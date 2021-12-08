@@ -16,4 +16,5 @@ matplotlib
 seaborn
 ipykernel
 fastprogress
+pyarrow
 
