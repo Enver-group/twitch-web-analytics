@@ -15,4 +15,5 @@ numpy
 matplotlib
 seaborn
 ipykernel
+fastprogress
 
