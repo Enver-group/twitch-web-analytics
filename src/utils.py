@@ -1,25 +1,18 @@
 import pandas as pd
-from ast import literal_eval
+import networkx as nx
 
-def preprocess_streamers_df(df_streamers):
+def remove_outside_follows(df):
     """
-    Preprocesses the streamers dataframe.
+    Remove ids from df.user_follows that are not in df.id
+
+    It expects a dataframe with columns id and user_follows
     """
-    # Remove duplicates and preprocess
-    df_streamers = df_streamers.sort_values(["num_followers","view_count"])\
-        .reset_index(drop=True).drop_duplicates(subset=['id'],keep='first')\
-            .sort_values(["num_followers","view_count"],ascending=False)\
-                .astype({"id":str,"created_at":"datetime64"})
+    df_streamers = df.copy()
 
-    # clean user_follows and convert each list to array
-    df_streamers["user_follows"] = df_streamers.user_follows.\
-                                    replace("\r", "", regex=True)\
-                                        .str.strip().replace("",None)\
-                                            .replace(pd.NA,"None")\
-                                                .apply(literal_eval)
+    if "id" not in df_streamers.columns:
+        df_streamers = df_streamers.reset_index()
 
-
-    # remove those ids in user_follows that are not in df_streamers.id by exploding the dataframe
+    # remove those ids in user_follows that are not in df_streamers.id
     df_streamers_exploded = df_streamers.explode("user_follows")
     df_streamers_exploded = df_streamers_exploded[df_streamers_exploded["user_follows"].isin(df_streamers.id)]
     user_follows_arrays = df_streamers_exploded.groupby("id").user_follows.apply(list).reset_index()
@@ -31,3 +24,21 @@ def preprocess_streamers_df(df_streamers):
     df_streamers.loc[not_in_set_or_null,"user_follows"] =  pd.Series([[]]*not_in_set_or_null.sum()).values
 
     return df_streamers
+
+def df_to_nx(df):
+    """
+    Convert a dataframe of streamer users information with id and user_follows columns into a networkx graph
+    """
+    G = nx.from_pandas_edgelist(
+        df.reset_index().explode("user_follows"),
+        source="id",
+        target="user_follows",
+        create_using=nx.DiGraph() 
+    )
+    if "name" in df.columns.values:
+        nx.set_node_attributes(G, name='name', values=df.name.to_dict())
+    if "num_followers" in df.columns.values:
+        nx.set_node_attributes(G, name='num_followers', values=df.num_followers.to_dict())
+    if "view_count" in df.columns.values:
+        nx.set_node_attributes(G, name='view_count', values=df.view_count.to_dict())
+    return G

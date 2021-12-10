@@ -1,6 +1,16 @@
+from logging import root
 from .make_dataset import make_dataset, extract_follows_from_users_df, extract_num_followers_from_users_df
-import sys
+import logging, os
 import click
+
+
+# Set the logger format to show the name, time in minutes, and message
+logging.basicConfig(
+    format='%(asctime)s - %(name)s.%(funcName)s - %(levelname)s: %(message)s',
+    datefmt='%b %d %H:%M',
+    level=logging.INFO
+)
+logger = logging.getLogger(os.path.basename(__name__).split(".")[-1])
 
 """
 Extract the data required to carry the analysis of hispanic twitch streamers
@@ -25,6 +35,8 @@ def main(output_file=None,input_df=None,root_user=None,max_users=None,get_follow
     if not input_df:
         make_dataset(root_user,output_file=output_file,max_users=max_users,get_follows_of_top=get_follows_of_top,get_num_followers_of_top=get_num_followers_of_top)
     else:
+        if root_user or max_users:
+            logger.warning("The root_user and max_users options are not compatible when the dataset has already been created (input_df). root_user and max_users will be ignored")
         if get_follows_of_top:
             extract_follows_from_users_df(input_df,output_file,get_follows_of_top)
         if get_num_followers_of_top:
