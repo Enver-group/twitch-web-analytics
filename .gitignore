@@ -67,6 +67,9 @@ target/
 data/*
 !*.feather
 
+data/*
+!*data_asmr.csv
+
 # Pycharm
 .idea
 
