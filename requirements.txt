@@ -19,4 +19,5 @@ fastprogress
 pyarrow
 networkx
 pyvis
+plotly==5.1.0
 
