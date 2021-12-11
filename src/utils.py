@@ -1,5 +1,4 @@
 import pandas as pd
-import networkx as nx
 
 def remove_outside_follows(df):
     """
@@ -24,21 +23,3 @@ def remove_outside_follows(df):
     df_streamers.loc[not_in_set_or_null,"user_follows"] =  pd.Series([[]]*not_in_set_or_null.sum()).values
 
     return df_streamers
-
-def df_to_nx(df):
-    """
-    Convert a dataframe of streamer users information with id and user_follows columns into a networkx graph
-    """
-    G = nx.from_pandas_edgelist(
-        df.reset_index().explode("user_follows"),
-        source="id",
-        target="user_follows",
-        create_using=nx.DiGraph() 
-    )
-    if "name" in df.columns.values:
-        nx.set_node_attributes(G, name='name', values=df.name.to_dict())
-    if "num_followers" in df.columns.values:
-        nx.set_node_attributes(G, name='num_followers', values=df.num_followers.to_dict())
-    if "view_count" in df.columns.values:
-        nx.set_node_attributes(G, name='view_count', values=df.view_count.to_dict())
-    return G
