@@ -8,7 +8,7 @@ def set_home():
 
     # st.header(title)
     # https://drive.google.com/file/d/1fs4-hYjsrRwOjSSMlbzNrftxyjSGNHg0/view?usp=sharing
-    image_1 = "https://drive.google.com/uc?id=1qOLXeuFEFQUGOhbyEVlZpmHSBFZEy-6v"
+    image_1 = "https://drive.google.com/uc?id=1SV6b0q2TVHUXfcE6IGCXUu_vuhaDaTJK"
     # image_2 = '/home/simon/Documents/Uni/WebAnalytics/TwitchProject/app/main/images/vew_count_v_num_followers.png'  
     
     #col4, col5, col6, col7, col8 = st.columns(8)
