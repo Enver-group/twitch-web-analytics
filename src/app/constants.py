@@ -21,9 +21,9 @@ December, 2021
 
 # HOME =========================================================================
 intro = '''
-#  Analysis of Hispanic streamers in the Twitch community Dashboard
+#  Analysis of Hispanic streamers in the Twitch community
 
-This is a network analysis of the Twitch community of Hispanic streamers.
+The purpose of this dashboard is to present our analysis of the Twitch community of Hispanic streamers.
 For this analysis, we have used the [Twitch API](https://dev.twitch.tv/docs/api/reference/) in 
 order to get the data about streamers and their followers. 
 
