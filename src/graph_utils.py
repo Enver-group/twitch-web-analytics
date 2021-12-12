@@ -26,12 +26,27 @@ def df_to_nx(df):
     return G
 
 
-def get_k_common_followers(filename, filter_weight=0.05, common_followers_with="Ibai"):
+def get_k_common_followers(df_or_filename, filter_weight=0.05, common_followers_with="Ibai"):
+    '''
+    Get the k most common followers of a streamer
 
-    if filename.endswith("csv"):
-        df = pd.read_csv(filename, lineterminator='\n')
-    elif filename.endswith("feather"):
-        df = pd.read_feather(filename)
+    Parameters
+    ----------
+    df_or_filename : str or pandas dataframe
+        The dataframe or filename of the streamer data
+    filter_weight : float
+        The minimum weight of a follower to be considered
+    common_followers_with : str
+        The name of the streamer to get the common followers with
+    '''
+
+    if isinstance(df_or_filename, str):
+        if df_or_filename.endswith("csv"):
+            df = pd.read_csv(df_or_filename, lineterminator='\n')
+        elif df_or_filename.endswith("feather"):
+            df = pd.read_feather(df_or_filename)
+    else:
+        df = df_or_filename
 
     df = df.dropna(how='any',
                     subset=['user_follows'])
@@ -60,54 +75,52 @@ def get_k_common_followers(filename, filter_weight=0.05, common_followers_with="
 def plot_graph_pyVis(df, output_file):
   ''' df needs to contain three columns: starting node, ending node and the edge weigth'''
 
-  got_net = Network(height='750px', width='100%',
-                    bgcolor='#222222', font_color='white')
+  net = Network(height='750px', width='100%',
+                    bgcolor='#222222', font_color='white', notebook=True)
 
   # set the physics layout of the network
-  got_net.barnes_hut()
+  net.barnes_hut()
 
   sources, targets, weigths = df.iloc[:, 0], df.iloc[:, 1], df.iloc[:, 2]
 
   edge_data = zip(sources, targets, weigths)
 
-  for e in edge_data:
-      src = e[0]
-      dst = e[1]
-      w = e[2]
+  for src,dst,w in edge_data:
+      net.add_node(src, src, title=src)
+      net.add_node(dst, dst, title=dst)
+      net.add_edge(src, dst, value=w)
 
-      got_net.add_node(src, src, title=src)
-      got_net.add_node(dst, dst, title=dst)
-      got_net.add_edge(src, dst, value=w)
-
-  neighbor_map = got_net.get_adj_list()
+  neighbor_map = net.get_adj_list()
 
   # add neighbor data to node hover data
-  for node in got_net.nodes:
+  for node in net.nodes:
       node['title'] += ' Neighbors:<br>' + \
           '<br>'.join(neighbor_map[node['id']])
       node['value'] = len(neighbor_map[node['id']])
 
-  got_net.show_buttons(filter_=['physics'])
-  got_net.show(output_file)
+  net.show_buttons(filter_=['physics'])
+  net.show(output_file)
 
 
-def get_top_followers(filename, k=15, common_followers_with="Ibai"):
+def get_top_followers(df_or_filename, k=15, common_followers_with="Ibai"):
     '''
     Returns a dataframe with the top k followers of a given user in the network of Twitch streamers.
 
     Args:
-        filename: path to the file with the network of streamers
+        df_or_filename: dataframe or path to the dataframe file with the network of streamers
         k: number of top followers to return
         common_followers_with: name of the user to get the top followers of
     '''
 
-    if filename.endswith("csv"):
-        df = pd.read_csv(filename, lineterminator='\n')
-    elif filename.endswith("feather"):
-        df = pd.read_feather(filename)
+    if isinstance(df_or_filename, str):
+        if df_or_filename.endswith("csv"):
+            df = pd.read_csv(df_or_filename, lineterminator='\n')
+        elif df_or_filename.endswith("feather"):
+            df = pd.read_feather(df_or_filename)
+    else:
+        df = df_or_filename
 
-    follows_of_user = df.loc[df.name.str.lower(
-    ) == common_followers_with.lower()].iloc[0]["user_follows"]
+    follows_of_user = df.loc[df.name.str.lower() == common_followers_with.lower()].iloc[0]["user_follows"]
 
     df = df.loc[df['id'].isin(follows_of_user)]
 
@@ -179,4 +192,37 @@ def draw_graph(G,title=None):
   nx.draw_networkx(G, pos)
   plt.title(title)
   plt.show()
+
+def from_pandas_to_pyviz_net(df,height="600px",width="600px", emphasize_node=None):
+    # Create networkx graph object from pandas dataframe
+    G = nx.from_pandas_edgelist(df, edge_attr = True)
+
+    if emphasize_node:
+        for node in G.nodes:
+            if node == emphasize_node:
+                G.nodes[node]["color"] = "orange"
+            # else:
+            #     G.nodes[node]["color"] = "red"
+
+    # Initiate PyVis network object
+    streamer_net = Network(
+                       height= height,
+                       width= width,
+                       bgcolor='#222222',
+                       font_color='white',
+                       notebook=True
+                      )
+
+    # Take Networkx graph and translate it to a PyVis graph format
+    streamer_net.from_nx(G)
+
+    # Generate network with specific layout settings
+    streamer_net.repulsion(
+                        node_distance=420,
+                        central_gravity=0.33,
+                        spring_length=110,
+                        spring_strength=0.10,
+                        damping=0.95
+                       )
+    return streamer_net
 
