@@ -38,7 +38,7 @@ st.markdown(hide_streamlit_menu_style, unsafe_allow_html=True)
 
 data_path = "data/streamers_small.feather"
 
-@st.cache(persist=True, show_spinner=False)
+# @st.cache(persist=True, show_spinner=False)
 def load_data():
     df = pd.read_feather(data_path)
     return df

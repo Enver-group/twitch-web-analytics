@@ -6,8 +6,6 @@ import numpy as np
 
 
 def set_data(df):
-    # movies = load_csv(path)
-    # rates = pd.read_csv(path_rates)
 
     st.title('Data')
 
@@ -43,6 +41,9 @@ def set_data(df):
             - **user_follows**: List of the ids of the users that the Twitch user follows
             '''
         )
+        st.markdown('### How it was extracted:')
+        col1, col2 = st.columns(2)
+        col2.image("reports/figures/data_extraction_tree.png", width=700)
     else:
         # Select number of users to show
         col_n_user, col_sort = st.columns(2)
@@ -83,17 +84,6 @@ def set_data(df):
                 </a>
                 ''',unsafe_allow_html=True
             )
-        # Check if user davimenxpro is in the dataset
-        # if 'davimenxpro' in df_small['name'].str.lower().values and len(df_small) > 60:
-        #     # remove last row if davimenxpro is in the dataset and add a new row with the davimenxpro data
-        #     col1, col2, col3, col4 = st.columns(4)
-        #     col1.markdown(f'''
-        #         <a href="https://www.twitch.tv/{df_small.iloc[-1]["name"]}" target="_blank" style="text-align: center; display: block; text-decoration:none" >
-        #             <img src="{df_small.iloc[-1]['profile_image_url']}" width="200" alt="{df_small.iloc[-1]['name']}">
-        #             <p style="color:darkgrey" >{df_small.iloc[-1]['name']}</p>
-        #         </a>
-        #         ''',unsafe_allow_html=True
-        #     )
 
 def bars_nmovies_imdb():
     # Número de pelis por año en IMDb

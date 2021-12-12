@@ -1,13 +1,5 @@
 import pandas as pd
-import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-import networkx as nx
-import seaborn as sns
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-import pickle
-import collections
 
 import streamlit as st
 from ..constants import *
@@ -43,67 +35,6 @@ def set_analysis(df):
     col1,col2 = st.columns(2)
     col1.plotly_chart(get_scatter_plotly(df),use_container_width=True)
     col2.plotly_chart(get_joins_overtime_plot(df),use_container_width=True)
-
-    st.write(get_df_metrics(df),use_container_width=True)
-    st.plotly_chart(get_pie_cores_topusers(df))
-
-@st.cache(show_spinner=False)
-def get_df_metrics(df):
-    df_ranking_metrics = pd.DataFrame()
-    for m in ["indegree","outdegree", "closeness", "betweenness", "pagerank", "nx_cores"]:
-        # load metric
-        folder_name = "data/fundamental_metrics"
-        file_name = f"{folder_name}/{m}.pkl"
-        with open(file_name, 'rb') as f:
-            metric = pickle.load(f)
-        ranking10_ids = list(metric.keys())[:10]
-        ranking10_names = [df[df["id"]==node_id]["name"].iloc[0] for node_id in ranking10_ids]
-        df_ranking_metrics[m] = ranking10_names
-    return df_ranking_metrics
-
-def get_pie_cores_topusers(df):
-    df_ranking_metrics = get_df_metrics(df)
-    # load k-core descomposition
-    with open("data/fundamental_metrics/nx_cores.pkl", 'rb') as f:
-        nx_cores = pickle.load(f)
-    
-    # reformat NetworkX solution
-    nx_cores_format = {c:set() for c in set(nx_cores.values())}
-    for node in nx_cores:
-      nx_cores_format[nx_cores[node]].add(node)
-
-    # order the imporant users (according to fundamental metrics) by core number
-    important_users_names = collections.Counter()
-    for m in df_ranking_metrics.drop("outdegree", axis=1):
-      for user_name in df_ranking_metrics[m]:
-        important_users_names.update([user_name,])
-    # get keys with highest values counter
-    important_users_names = [i[0] for i in important_users_names.most_common()][:11]
-    
-    # extract ids from important users
-    important_users_ids = list(df[df["name"].isin(important_users_names)]["id"])
-
-    important_users_cores = { user_id: nx_cores[user_id] for user_id in important_users_ids}
-    # reformat NetworkX solution
-    important_users_cores_format = {c:set() for c in set(important_users_cores.values())}
-    for node in important_users_cores:
-      important_users_cores_format[important_users_cores[node]].add(node)
-    important_users_cores_format = dict(sorted(important_users_cores_format.items(), key=lambda x: x[0],reverse=True))
-
-    n_important_users = len(important_users_ids)
-    cores = []
-    percentage_cores = []
-    for core in important_users_cores_format:
-      cores.append(core)
-      users_in_core = [df[df["id"]==node_id]["name"].iloc[0] for node_id in important_users_cores_format[core]]
-      percentage_cores.append(len(users_in_core)/n_important_users)
-    
-    fig = px.pie(values=percentage_cores, names=list(important_users_cores_format.keys()), 
-        title = "K-Core Decomposition in 10 top users")
-    fig.update_layout(
-            paper_bgcolor="#222222",plot_bgcolor="#222222",
-    )
-    return fig
 
 
 @st.cache(show_spinner=False)

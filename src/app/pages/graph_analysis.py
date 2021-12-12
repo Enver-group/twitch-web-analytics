@@ -1,18 +1,14 @@
 import streamlit.components.v1 as components
 import pandas as pd
-import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-import networkx as nx
-import seaborn as sns
-import matplotlib.pyplot as plt
-import matplotlib as mpl
 
 import streamlit as st
 import plotly.express as px
 import plotly.io as pio
 import os
 import base64
+import pickle
+import collections
 
 from ..constants import *
 from ...graph_utils import get_k_common_followers, get_top_followers, from_pandas_to_pyviz_net
@@ -20,22 +16,9 @@ from ...graph_utils import get_k_common_followers, get_top_followers, from_panda
 pio.templates.default = "plotly_dark"
 
 
-def pv_static(fig, name='graph'):
-    # https://github.com/napoles-uach/stvis
-    h1 = fig.height
-    h1 = int(h1.replace('px', ''))
-    w1 = fig.width
-    w1 = int(w1.replace('px', ''))
-    fig.show(name+'.html')
-    return components.html(
-        fig.html, height=h1+30, width=w1+30
-    )
-
-
 def set_graph_analysis(df):
 
     st.title('Graph Analysis of the Networks of Hispanic Twitch Streamers')
-    st.subheader("How do streamers follow each other?")
 
     menu_items = ["PyViz", "Gephi"]
     menu_variables = st.radio(
@@ -48,8 +31,25 @@ def set_graph_analysis(df):
         # st.text("Sorry, this feature is not implemented yet")
         show_gephi_graphs()
 
+def pv_static(fig, name='graph'):
+    # https://github.com/napoles-uach/stvis
+    h1 = fig.height
+    h1 = int(h1.replace('px', ''))
+    w1 = fig.width
+    w1 = int(w1.replace('px', ''))
+    fig.show(name+'.html')
+    return components.html(
+        fig.html, height=h1+30, width=w1+30
+    )
 
 def show_streamers_pyviz_graphs(df):
+    
+    st.subheader("Graph Metrics")
+    col1, col2 = st.columns((0.7,0.3) )
+    col1.write(get_df_metrics(df),use_container_width=True,height=600)
+    col2.plotly_chart(get_pie_cores_topusers(df), use_container_width=True,height=600)
+    
+    st.subheader("How do streamers follow each other?")
     # Define list of streamer to visualize in a graph
     streamer_list = df.sort_values(
         "num_followers", ascending=False).name.tolist()
@@ -130,3 +130,63 @@ def show_gephi_graphs():
                 </a>
                 ''',unsafe_allow_html=True 
             )
+
+@st.cache(show_spinner=False)
+def get_df_metrics(df):
+    df_ranking_metrics = pd.DataFrame()
+    for m in ["indegree","outdegree", "closeness", "betweenness", "pagerank", "nx_cores"]:
+        # load metric
+        folder_name = "data/fundamental_metrics"
+        file_name = f"{folder_name}/{m}.pkl"
+        with open(file_name, 'rb') as f:
+            metric = pickle.load(f)
+        ranking10_ids = list(metric.keys())[:10]
+        ranking10_names = [df[df["id"]==node_id]["name"].iloc[0] for node_id in ranking10_ids]
+        df_ranking_metrics[m] = ranking10_names
+    return df_ranking_metrics
+
+def get_pie_cores_topusers(df):
+    df_ranking_metrics = get_df_metrics(df)
+    # load k-core descomposition
+    with open("data/fundamental_metrics/nx_cores.pkl", 'rb') as f:
+        nx_cores = pickle.load(f)
+    
+    # reformat NetworkX solution
+    nx_cores_format = {c:set() for c in set(nx_cores.values())}
+    for node in nx_cores:
+      nx_cores_format[nx_cores[node]].add(node)
+
+    # order the imporant users (according to fundamental metrics) by core number
+    important_users_names = collections.Counter()
+    for m in df_ranking_metrics.drop("outdegree", axis=1):
+      for user_name in df_ranking_metrics[m]:
+        important_users_names.update([user_name,])
+    # get keys with highest values counter
+    important_users_names = [i[0] for i in important_users_names.most_common()][:11]
+    
+    # extract ids from important users
+    important_users_ids = list(df[df["name"].isin(important_users_names)]["id"])
+
+    important_users_cores = { user_id: nx_cores[user_id] for user_id in important_users_ids}
+    # reformat NetworkX solution
+    important_users_cores_format = {c:set() for c in set(important_users_cores.values())}
+    for node in important_users_cores:
+      important_users_cores_format[important_users_cores[node]].add(node)
+    important_users_cores_format = dict(sorted(important_users_cores_format.items(), key=lambda x: x[0],reverse=True))
+
+    n_important_users = len(important_users_ids)
+    cores = []
+    percentage_cores = []
+    for core in important_users_cores_format:
+      cores.append(core)
+      users_in_core = [df[df["id"]==node_id]["name"].iloc[0] for node_id in important_users_cores_format[core]]
+      percentage_cores.append(len(users_in_core)/n_important_users)
+    
+    fig = px.pie(values=percentage_cores, names=list(important_users_cores_format.keys()), 
+        title = "K-Core Decomposition in 10 top users",height=350
+    )
+    fig.update_layout(
+            paper_bgcolor="#222222",plot_bgcolor="#222222",
+            margin=dict(t=32, b=0.7, l=0.7, r=0.7)
+    )
+    return fig
