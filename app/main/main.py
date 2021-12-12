@@ -3,7 +3,6 @@ import pandas as pd
 import sys
 sys.path.append('.')
 
-from app.main.app_utils import *
 from src.app.pages import set_home, set_data, set_analysis, set_graph_analysis
 from src.app.constants import *
 
