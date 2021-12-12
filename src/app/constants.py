@@ -1,7 +1,23 @@
+from streamlit.proto.RootContainer_pb2 import SIDEBAR
+
+
 path = 'src/data/web_imdb_clean/movies.csv'
 path_rates = 'src/data/OECD/DP_LIVE_16072021155836489.csv'
 
 title = 'Network Analysis of Hispanic streamers in the Twitch community'
+
+# SIDEBAR ==============================================================
+sidebar_text = '''
+Made for Web Analytics by:
+- Andres Ruiz Calvo
+- David Méndez Encinas
+- Enrique Botía Barbera
+- Simon E. Sanchez Viloria
+
+Bachelor's Degree in Data Science and Engineering
+
+December, 2021
+'''
 
 # HOME =========================================================================
 intro = '''
@@ -28,7 +44,7 @@ columns_description = '''
 - `broadcaster_type`: Type of broadcaster (partner, affiliate, etc.)
 - `description`: Description of the Twitch user in its profile
 - `lang`: Language of the Twitch user (They are all spanish)
-- `last_game_played_name`: Name of the last game played by the Twitch user as of December 5th, 2021
+- `last_game_played_name`: Name of the last game played by the Twitch user when the data was collected (around December 5th-10th of 2021)
 - `profile_image_url`: URL of the profile image of the Twitch user
 - `created_at`: Date when the Twitch user was created
 - `user_follows`: List of the ids of the users that the Twitch user follows

@@ -18,7 +18,7 @@ pio.templates.default = "plotly_dark"
 
 def set_graph_analysis(df):
 
-    st.title('Graph Analysis of the Networks of Hispanic Twitch Streamers')
+    st.title('Graph Analysis of the Hispanic streaming community in Twitch')
 
     menu_items = ["PyViz", "Gephi"]
     menu_variables = st.radio(
