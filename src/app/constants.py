@@ -17,12 +17,11 @@ order to get the data about streamers and their followers.
 
 
 explanations_of_graph_1 = '''
-Explanation of the Graph 1
+For the user represented in orange, we get 15 users followed by him and represent among those users how the follow each other.
 '''
 
 explanations_of_graph_2 = '''
-Explanation of the Graph 2
-'''
+For the user represented in orange, we extract all the users he follows and compare the "similarity" between each of those the people followed by each of those users and the original user represented in orange'''
 
 
 references = '''
