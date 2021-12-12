@@ -24,8 +24,8 @@ intro = '''
 #  Analysis of Hispanic streamers in the Twitch community
 
 The purpose of this dashboard is to present our analysis of the Twitch community of Hispanic streamers.
-For this analysis, we have used the [Twitch API](https://dev.twitch.tv/docs/api/reference/) in 
-order to get the data about streamers and their followers. 
+To carry our analysis, we made use of the [Twitch API](https://dev.twitch.tv/docs/api/reference/) in 
+order to get information about streamers and construct our dataset. 
 
 The main objectives of our analysis were the following:
 
