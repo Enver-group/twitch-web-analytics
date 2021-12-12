@@ -44,7 +44,7 @@ def pv_static(fig, name='graph'):
 
 def show_streamers_pyviz_graphs(df):
     
-    st.subheader("Graph Metrics")
+    st.subheader("Network Metrics")
     col1, col2 = st.columns((0.7,0.3) )
     col1.write(get_df_metrics(df),use_container_width=True,height=600)
     col2.plotly_chart(get_pie_cores_topusers(df), use_container_width=True,height=600)
@@ -145,6 +145,7 @@ def get_df_metrics(df):
         df_ranking_metrics[m] = ranking10_names
     return df_ranking_metrics
 
+@st.cache(show_spinner=False)
 def get_pie_cores_topusers(df):
     df_ranking_metrics = get_df_metrics(df)
     # load k-core descomposition
@@ -183,7 +184,7 @@ def get_pie_cores_topusers(df):
       percentage_cores.append(len(users_in_core)/n_important_users)
     
     fig = px.pie(values=percentage_cores, names=list(important_users_cores_format.keys()), 
-        title = "K-Core Decomposition in 10 top users",height=350
+        title = "K-Core Decomposition of the 10 top users",height=350
     )
     fig.update_layout(
             paper_bgcolor="#222222",plot_bgcolor="#222222",
