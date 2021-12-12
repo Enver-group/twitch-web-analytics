@@ -104,3 +104,5 @@ notebooks/
 !notebooks/*.ipynb
 !notebooks/*.md
 !notebooks/.gitkeep
+
+reports/graph*
