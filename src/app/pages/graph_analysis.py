@@ -61,63 +61,45 @@ def show_streamers_pyviz_graphs(df):
     image_col.image(df[df['name'] == selected_streamer]
                     ['profile_image_url'].values[0], width=100)
 
-    row3_space1, row3_1, row3_space2, row3_2, row3_space3 = st.columns(
-        (.1, 1.5, .5, 1.5, .1))
+    
+    col1, _, col2 = st.columns( (2,.5,2) )
 
-    with row3_1:
-        st.subheader('Graph 1')
-        st.markdown(explanations_of_graph_1)
+    col1.subheader('Graph of Common Follows')
+    col1.markdown(explanations_of_graph_1)
+    col2.subheader('Graph of User Follows')
+    col2.markdown(explanations_of_graph_2)
 
-        # if len(selected_streamer) == 0:
-        #     st.text('Choose at least 1 streamer to visualize')
-
-        # elif len(selected_streamer) > 1:
-        #     st.text('Choose at most 1 streamer to visualize')
-        # # Create network graph when user selects >= 1 item
-        # else:
+    col1, _, col2 = st.columns( (2,.25,2) )
+    with col1:
         df = get_top_followers(
             df.copy(), common_followers_with=selected_streamer)
-
         net1 = from_pandas_to_pyviz_net(df, emphasize_node=selected_streamer)
-
         pv_static(net1, name="reports/graph")
 
-    with row3_2:
-        st.subheader('Graph 2')
-        st.markdown(explanations_of_graph_2)
-
-        # if len(selected_streamer) == 0:
-        #     st.text('Choose at least 1 streamer to visualize')
-
-        # elif len(selected_streamer) > 1:
-        #     st.text('Choose at most 1 streamer to visualize')
-        # # Create network graph when user selects >= 1 item
-        # else:
+    with col2:
         df2 = get_k_common_followers(
             "data/streamers.feather", common_followers_with=selected_streamer)
-
         net2 = from_pandas_to_pyviz_net(df2, emphasize_node=selected_streamer)
-
         pv_static(net2, name="reports/graph2")
 
 
 def show_gephi_graphs():
     image_mapping = {"11. Carola Network Downsampled.png": "https://drive.google.com/file/d/15UYwfW-a4Jl66j8PKWqWbVxAMeQV32v_/view?usp=sharing",
                      "12. Nissaxter Network downsampeld.png": "https://drive.google.com/file/d/1hnw6cczJnbR6ZS8-uVWPFv1z7_4NHTX5/view?usp=sharing",
-                     "5. Twitch 30000 followers downsampled.png": "https://drive.google.com/file/d/1itq2yLykr8n0l2nWAnYpz8L-XkU4RHRS/view?usp=sharing",
-                     "3. Twitch 100000 followers by views downsample.png": "https://drive.google.com/file/d/1ivRn3VOoNoD8f-_LaViI4odpUZRGx_jK/view?usp=sharing",
-                     "4. Twitch 100000 followers downsamled.png": "https://drive.google.com/file/d/1f-aCAXW4RhGf4WJqtA-V6b2vJUSKv_dL/view?usp=sharing",
-                     "9. Twitch ASMR dowsampled.png": "https://drive.google.com/file/d/1PQvnT9uolchlgx5KFExtwQGGg_ZMUdFJ/view?usp=sharing",
-                     "6. Twitch Just Chatting downsampled.png": "https://drive.google.com/file/d/1PyvyQMP704icQDy3S_lEF4vBD19Ml0JD/view?usp=sharing",
-                     "7. Twitch League of Legends downsampled.png": "https://drive.google.com/file/d/1oR3PtAKy8Fwu85VAmU0Ks1NQk8mLJDeh/view?usp=sharing",
-                     "8. Twitch Minecraft downsampled.png": "https://drive.google.com/file/d/1m5SNyNe4dsOL3ZBaX-A8qVeAZ5gQema3/view?usp=sharing",
+                     "05. Twitch 30000 followers downsampled.png": "https://drive.google.com/file/d/1itq2yLykr8n0l2nWAnYpz8L-XkU4RHRS/view?usp=sharing",
+                     "03. Twitch 100000 followers by views downsample.png": "https://drive.google.com/file/d/1ivRn3VOoNoD8f-_LaViI4odpUZRGx_jK/view?usp=sharing",
+                     "04. Twitch 100000 followers downsamled.png": "https://drive.google.com/file/d/1f-aCAXW4RhGf4WJqtA-V6b2vJUSKv_dL/view?usp=sharing",
+                     "09. Twitch ASMR dowsampled.png": "https://drive.google.com/file/d/1PQvnT9uolchlgx5KFExtwQGGg_ZMUdFJ/view?usp=sharing",
+                     "06. Twitch Just Chatting downsampled.png": "https://drive.google.com/file/d/1PyvyQMP704icQDy3S_lEF4vBD19Ml0JD/view?usp=sharing",
+                     "07. Twitch League of Legends downsampled.png": "https://drive.google.com/file/d/1oR3PtAKy8Fwu85VAmU0Ks1NQk8mLJDeh/view?usp=sharing",
+                     "08. Twitch Minecraft downsampled.png": "https://drive.google.com/file/d/1m5SNyNe4dsOL3ZBaX-A8qVeAZ5gQema3/view?usp=sharing",
                      "10. Twitch Music downsampled.png": "https://drive.google.com/file/d/160bllFOG2UhrZqCZ8ioPhWlSUa-JQG1f/view?usp=sharing",
-                     "2. Twitch partners downsampled.png": "https://drive.google.com/file/d/1tNS8QpjHO_XKFMNnMRoNBUsoNL_U9Dcs/view?usp=sharing",
-                     "1. Twitch top 100 streamers downsampled.png": "https://drive.google.com/file/d/1qOLXeuFEFQUGOhbyEVlZpmHSBFZEy-6v/view?usp=sharing"}
+                     "02. Twitch partners downsampled.png": "https://drive.google.com/file/d/1tNS8QpjHO_XKFMNnMRoNBUsoNL_U9Dcs/view?usp=sharing",
+                     "01. Twitch top 100 streamers downsampled.png": "https://drive.google.com/file/d/1qOLXeuFEFQUGOhbyEVlZpmHSBFZEy-6v/view?usp=sharing"}
     st.subheader('Graphs Made with Gephi')
     # 2 columns showing the images of the graphs generated by Gephi
 
-    images = [img for img in os.listdir('app/main/images') if img.endswith('.png')]
+    images = sorted([img for img in os.listdir('app/main/images') if img.endswith('.png')])
     st.markdown(
         "Click on the images to see them on full resolution or click [here](https://drive.google.com/drive/folders/1sLFmG8H_ccWvvZcTS-vsuiaTParDkmf5)"\
             " to see more.", unsafe_allow_html=True)
@@ -125,7 +107,7 @@ def show_gephi_graphs():
         col1, col2 = st.columns(2)
         # get the two images from the dictionary
         image_path1, image_path2 = images[i*2:i*2+2]
-        name1, name2 = [" ".join(path.split(".")[0].split(' ')[:-1])
+        name1, name2 = [" ".join(path.replace(".png","").split(' ')[:-1])
                         for path in [image_path1, image_path2]]
         imagefile1, imagefile2 = open(f"app/main/images/{image_path1}", "rb"), open(f"app/main/images/{image_path2}", "rb")
         contents1,contents2 = imagefile1.read(), imagefile2.read()

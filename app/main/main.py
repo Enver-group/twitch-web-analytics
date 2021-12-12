@@ -6,7 +6,7 @@ sys.path.append('.')
 from src.app.pages import set_home, set_data, set_analysis, set_graph_analysis
 from src.app.constants import *
 
-st.set_page_config(page_title='Twitch Analyis',
+st.set_page_config(page_title='Twitch Analysis',
                    page_icon='https://www.google.com/s2/favicons?domain=www.twitch.com',
                    layout="wide")
 
