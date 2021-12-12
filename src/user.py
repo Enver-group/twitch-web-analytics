@@ -22,11 +22,11 @@ class User:
     user_follows : list = None
 
     def __hash__(self):
-        # Used for storing users in a set
+        # Used for storing users in a set. Uniqueness is checked by id
         return hash(self.id)
     
     def __repr__(self):
-        # to be used in debugging or displaying the object. Uniqueness is checked by id
+        # to be used in debugging or displaying the object
         return f"User(name={self.name}, id={self.id}, created_at={self.created_at}, view_count={self.view_count}, num_followers={self.num_followers})"
 
     def __eq__(self, __o: object) -> bool:

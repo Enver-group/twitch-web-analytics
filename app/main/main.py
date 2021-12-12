@@ -28,7 +28,7 @@ menu = st.sidebar.radio(
 st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
 
 st.sidebar.markdown('---')
-st.sidebar.write('Made for Web Analytics by Andres Ruiz Calvo, David Méndez Encinas, Enrique Botía Barbera, and Simon E. Sanchez Viloria | December 2021')
+st.sidebar.write(sidebar_text)
 
 hide_streamlit_menu_style = """
         <style>

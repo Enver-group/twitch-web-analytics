@@ -1,11 +1,5 @@
 import pandas as pd
-import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-import networkx as nx
-import seaborn as sns
-import matplotlib.pyplot as plt
-import matplotlib as mpl
 
 import streamlit as st
 from ..constants import *
@@ -41,6 +35,7 @@ def set_analysis(df):
     col1,col2 = st.columns(2)
     col1.plotly_chart(get_scatter_plotly(df),use_container_width=True)
     col2.plotly_chart(get_joins_overtime_plot(df),use_container_width=True)
+
 
 @st.cache(show_spinner=False)
 def get_scatter_plotly(df):
