@@ -4,13 +4,29 @@ path_rates = 'src/data/OECD/DP_LIVE_16072021155836489.csv'
 title = 'Network Analysis of Hispanic streamers in the Twitch community'
 
 intro = '''
-#  Analysis of Hispanic streamers in the Twitch community
+#  Analysis of Hispanic streamers in the Twitch community Dashboard
 
 This is a network analysis of the Twitch community of Hispanic streamers.
 For this analysis, we have used the [Twitch API](https://dev.twitch.tv/docs/api/reference/) in 
-order to get the data about streamers and their followers. 
+order to get the data about streamers and their followers. The main goals of this analysis are:
 
-... 
+
+
+
+
+-Visualize in detail the Twitch Hispanic Network
+
+
+
+-Perform a Community detection analysis
+
+
+
+
+-Make a raking of streaming with various metrics
+
+
+
 
 
 '''
