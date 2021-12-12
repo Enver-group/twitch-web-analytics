@@ -65,7 +65,7 @@ target/
 
 # data directory
 data/*
-!*.feather
+!data/*.feather
 
 data/*
 !*data_asmr.csv
