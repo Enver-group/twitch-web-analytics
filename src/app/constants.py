@@ -22,7 +22,7 @@ For the user represented in orange, we get 15 users followed by him and represen
 '''
 
 explanations_of_graph_2 = '''
-For the user represented in orange, we extract all the users he follows and compare the followers of those user with the original user represented in orange
+For the user in orange, we extract all the users he follows and compare those followers with the followers of the original user.
 '''
 
 references = '''
