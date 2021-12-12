@@ -13,6 +13,7 @@ st.set_page_config(page_title='Twitch Analyis',
 st.sidebar.image('https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Twitch_logo.svg/2560px-Twitch_logo.svg.png', 
     use_column_width=True
 )
+
 st.sidebar.header(title)
 st.sidebar.markdown('Streamlit Dashboard to explore our analysis of Twitch')
 
@@ -54,3 +55,4 @@ elif menu == 'Graph Analysis':
     set_graph_analysis(df )
 else:
     set_home()
+
