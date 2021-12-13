@@ -1,16 +1,16 @@
 Network Analysis of Hispanic streamers in the Twitch community
 ==============================
 
-Analysis of Twitch streamers in the Hispanic community We used the [Twitch API](https://dev.twitch.tv/docs/api/reference/) to get information about streamers, their followers,
-and who they follow, in order to construct the dataset we used to carry the analysis.
+Analysis of Twitch streamers in the Hispanic community based on their follows. We used the [Twitch API](https://dev.twitch.tv/docs/api/reference/) to get information about users, their followers,
+and who they follow in order to construct the dataset we used to carry our analysis.
 
-The main objectives of the analysis were the following:
+The main objectives were the following:
 
 - Obtain insights and Visualize in detail the Twitch Hispanic Network
 
-- Perform Community detection analysis on the network of streamers.
+- Perform Community detection analysis on the graph of streamers.
 
-- Rank streamers using various network metrics
+- Rank streamers using network metrics
 
 - Make a simple recommendation system for Twitch streamers based on their follows.
 
