@@ -71,9 +71,9 @@ def show_streamers_pyviz_graphs(df):
 
     col1, _, col2 = st.columns( (2,.25,2) )
     with col1:
-        df = get_top_followers(
+        df1 = get_top_followers(
             df.copy(), common_followers_with=selected_streamer)
-        net1 = from_pandas_to_pyviz_net(df, emphasize_node=selected_streamer)
+        net1 = from_pandas_to_pyviz_net(df1, emphasize_node=selected_streamer)
         pv_static(net1, name="reports/graph")
 
     with col2:
@@ -81,6 +81,12 @@ def show_streamers_pyviz_graphs(df):
             "data/streamers.feather", common_followers_with=selected_streamer)
         net2 = from_pandas_to_pyviz_net(df2, emphasize_node=selected_streamer)
         pv_static(net2, name="reports/graph2")
+
+
+    st.subheader('Position in the ranking of fundamental metrics (from 15460 streamers)')
+
+    col1, col2 = st.columns((0.7,0.3) )
+    col1.write(get_metrics_streamer(selected_streamer, df),use_container_width=True,height=600)
 
 
 def show_gephi_graphs():
@@ -191,3 +197,17 @@ def get_pie_cores_topusers(df):
             margin=dict(t=32, b=0.7, l=0.7, r=0.7)
     )
     return fig
+
+@st.cache(show_spinner=False)
+def get_metrics_streamer(streamer_name, df):
+    streamer_id = str(int(df.loc[df["name"]==streamer_name]["id"]))
+    df_position_metrics = pd.DataFrame()
+    for m in ["indegree","outdegree", "closeness", "betweenness", "pagerank", "nx_cores"]:
+        # load metric
+        with open(f"data/fundamental_metrics/{m}.pkl", 'rb') as f:
+            metric = pickle.load(f)
+        position = list(metric.keys()).index(streamer_id)
+        df_position_metrics[m] = [position+1,]
+    df_position_metrics.index = [streamer_name,]
+    return df_position_metrics
+        
