@@ -93,13 +93,16 @@ def get_barplot_of_by_fig(df,bar_of,bar_by,n_max=5000):
     df_ = df.copy()
 
     if bar_by in ["last_game_played_name","view_count","num_followers"]:
-        df_ = df_.head(n_max).groupby(bar_by).count().reset_index()
+        df_ = df_.head(n_max).groupby(bar_by).count().reset_index().rename(columns={bar_of:"Count"})
         title = f"Count of Streamers by {labels_dict[bar_by]}"
-        df_ = df_[df_[bar_of]>5]
+        df_ = df_[df_["Count"]>5]
+        ishist = True
     else:
         df_ = df_.head(n_max).groupby(bar_by).sum().reset_index()
         title=f"{labels_dict.get(bar_of)} by {labels_dict.get(bar_by)}"
+        ishist = False
 
+    y_label = bar_of if not ishist else "Count"
     for row in df_.iloc:
         cat = row[bar_by]
         top_streamer_in_category = df[df[bar_by]==cat].sort_values(bar_of,ascending=False).iloc[0]['name']
@@ -107,11 +110,12 @@ def get_barplot_of_by_fig(df,bar_of,bar_by,n_max=5000):
 
     fig = px.bar(
         df_,
-        x=bar_by, y=bar_of,
+        x=bar_by, 
+        y=y_label if not ishist else "Count",
         color=bar_by,
         hover_data=["Top Streamer"],
         title=title,
-        labels={bar_of: labels_dict.get(bar_of), bar_by: labels_dict.get(bar_by)},
+        labels={y_label: labels_dict.get(y_label,"Count of Streamers"), bar_by: labels_dict.get(bar_by)},
         height=600,
         log_y=bar_by in ["last_game_played_name","view_count","num_followers"],
     )

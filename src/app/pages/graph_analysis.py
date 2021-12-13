@@ -16,16 +16,34 @@ from ...graph_utils import get_k_common_followers, get_top_followers, from_panda
 pio.templates.default = "plotly_dark"
 
 
+# Define list of streamer to visualize in a graph
+
 def set_graph_analysis(df):
 
     st.title('Graph Analysis of the Hispanic streaming community in Twitch')
 
-    menu_items = ["PyViz", "Gephi"]
+    menu_items = ["Network Metrics","PyViz", "Gephi"]
     menu_variables = st.radio(
         "",
         menu_items,
     )
     if menu_items.index(menu_variables) == 0:
+        st.subheader("Network Metrics")
+        col1, col2 = st.columns((0.7,0.3) )
+        col1.write(get_df_metrics(df),use_container_width=True,height=600)
+        col2.plotly_chart(get_pie_cores_topusers(df), use_container_width=True,height=600)
+        # Multiselect dropdown menu (returns a list)
+        streamer_list = df.sort_values("num_followers", ascending=False).name.tolist()
+
+        col1, _, col2 = st.columns((0.3,.1,0.7) )
+        selected_streamer = col1.selectbox(
+            'Select streamer to show metrics of', streamer_list)
+        col1.image(df[df['name'] == selected_streamer]
+                        ['profile_image_url'].values[0], width=100)
+
+        col2.subheader('Position in the ranking of fundamental metrics (from 15460 streamers)')
+        col2.write(get_metrics_streamer(selected_streamer, df),use_container_width=True,height=600)     
+    elif menu_items.index(menu_variables) == 1:
         show_streamers_pyviz_graphs(df)
     else:
         # st.text("Sorry, this feature is not implemented yet")
@@ -44,32 +62,22 @@ def pv_static(fig, name='graph'):
 
 def show_streamers_pyviz_graphs(df):
     
-    st.subheader("Network Metrics")
-    col1, col2 = st.columns((0.7,0.3) )
-    col1.write(get_df_metrics(df),use_container_width=True,height=600)
-    col2.plotly_chart(get_pie_cores_topusers(df), use_container_width=True,height=600)
-    
     st.subheader("How do streamers follow each other?")
-    # Define list of streamer to visualize in a graph
-    streamer_list = df.sort_values(
-        "num_followers", ascending=False).name.tolist()
-
+    streamer_list = df.sort_values("num_followers", ascending=False).name.tolist()
     # Multiselect dropdown menu (returns a list)
     selected_streamer = st.selectbox(
         'Select streamer to visualize', streamer_list)
     image_col, _, _, _ = st.columns(4)
     image_col.image(df[df['name'] == selected_streamer]
                     ['profile_image_url'].values[0], width=100)
-
     
-    col1, _, col2 = st.columns( (2,.5,2) )
-
+        
+    col1, _, col2 = st.columns( (0.45,.1,0.45) )
     col1.subheader('Graph of Common Follows')
     col1.markdown(explanations_of_graph_1)
     col2.subheader('Graph of User Follows')
     col2.markdown(explanations_of_graph_2)
-
-    col1, _, col2 = st.columns( (2,.25,2) )
+    col1, _, col2 = st.columns( (0.45,.1,0.45) )
     with col1:
         df1 = get_top_followers(
             df.copy(), common_followers_with=selected_streamer)
@@ -82,11 +90,7 @@ def show_streamers_pyviz_graphs(df):
         net2 = from_pandas_to_pyviz_net(df2, emphasize_node=selected_streamer)
         pv_static(net2, name="reports/graph2")
 
-
-    st.subheader('Position in the ranking of fundamental metrics (from 15460 streamers)')
-
-    col1, col2 = st.columns((0.7,0.3) )
-    col1.write(get_metrics_streamer(selected_streamer, df),use_container_width=True,height=600)
+    
 
 
 def show_gephi_graphs():

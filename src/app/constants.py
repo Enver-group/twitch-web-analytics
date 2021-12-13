@@ -94,3 +94,16 @@ references = '''
 - Ana Blanco's ([casiopa](https://github.com/casiopa)) [EDA-IMDb](https://share.streamlit.io/casiopa/eda-imdb/main/src/utils/streamlit/EDA_IMDb_main.py) streamlit app.
 
 '''
+
+# Reproducibility ==================================================================
+reproducibility_text = '''
+
+In order to reproduce the Analysis we made on this dashboard you can follow the steps below:
+
+1. Clone the repository of this project at https://github.com/Enver-group/twitch-web-analytics
+2. Download the requirements of the project with `pip install -r requirements.txt`
+3. You can use our own dataset in the data/ directory or setup the Twitch API Keys in your environmental variables 
+and create one yourself with the command `python -m src.data --root_user {YOUR SELECTED STREAMER} --output_file "data/streamers.feather" --max_users 10000`
+4. Go though our notebooks and source code and run the experiments and analysis we made for yourself.
+5. Run the streamlit app with `streamlit run app/main/main.py` to visualize the results in a dashboard like this one.
+'''

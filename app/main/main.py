@@ -20,11 +20,10 @@ st.sidebar.markdown('Streamlit Dashboard to explore our analysis of Twitch')
 
 menu = st.sidebar.radio(
     "",
-    ("Introduction", "Data", "Exploratory Analysis", 'Graph Analysis'),
+    ("Introduction", "Data", "Exploratory Analysis", 'Graph Analysis','Reproducibility'),
 )
 
-# Pone el radio-button en horizontal. Afecta a todos los radio button de una página.
-# Por eso está puesto en este que es general a todo
+# Radio button on the sidebar so that it can be seen everywhere
 st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
 
 st.sidebar.markdown('---')
@@ -54,5 +53,7 @@ elif menu == 'Exploratory Analysis':
 elif menu == 'Graph Analysis':
     set_graph_analysis(df )
 else:
-    set_home()
-
+    # col1, col2 = st.columns((0.7,0.3))
+    st.markdown("## Reproduce our Work")
+    st.image("app/main/repo.jpeg", use_column_width=True)
+    st.markdown(reproducibility_text)
