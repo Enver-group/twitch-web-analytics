@@ -26,7 +26,7 @@ The main objectives were the following:
 Streamlit Dashboard
 ----------
 
-A dashboard showing the insights of our analysis was made with streamlit. You can go [here](https://twitch-analysis-enver.azurewebsites.net/) to see it live or clone this repository, install the dependencies and run `streamlit run app/main/main.py` to execute it locally yourself. 
+A dashboard showing the insights of our analysis was made with streamlit. You can go [here](https://twitch-analysis-enver.azurewebsites.net/) to see it live or clone this repository, install the dependencies and run `streamlit run app/main/main.py` to execute it locally yourself. Also, [here](https://drive.google.com/drive/folders/1sLFmG8H_ccWvvZcTS-vsuiaTParDkmf5?usp=sharing) you can see all the images we obtained in our graph analysis.
 
 ![Streamlit Dashboard](https://github.com/Enver-group/twitch-web-analytics/blob/master/reports/figures/dashboard_home.png?raw=true)
 
