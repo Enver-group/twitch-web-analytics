@@ -20,7 +20,7 @@ The main objectives were the following:
 - David Méndez Encinas
 - Enrique Botía Barbera
 
-![Twitch Network Image](https://drive.google.com/uc?id=1SV6b0q2TVHUXfcE6IGCXUu_vuhaDaTJK)
+![](https://drive.google.com/uc?id=1SV6b0q2TVHUXfcE6IGCXUu_vuhaDaTJK)
 
 
 Streamlit Dashboard
