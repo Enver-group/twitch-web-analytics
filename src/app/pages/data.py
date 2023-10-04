@@ -16,7 +16,7 @@ def set_data(df):
     if 'davimenxpro' in df['name'].str.lower().values:
         # remove last row if davimenxpro is in the dataset and add a new row with the davimenxpro data
         df_small = df_small.drop(df_small.tail(1).index)
-        df_small = df_small.append(df[df['name'].str.lower() == 'davimenxpro'].iloc[0])
+        df_small = pd.concat([df_small, df[df['name'].str.lower() == 'davimenxpro'].iloc[0].to_frame().T], ignore_index=True)
     df_small = df_small.reset_index(drop=True)
     if menu_items.index(menu_variables) == 0:
         st.markdown('## The `streamers` Dataset: ')

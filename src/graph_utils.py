@@ -151,9 +151,8 @@ def get_top_followers(df_or_filename, k=15, common_followers_with="Ibai"):
 
     for row in df.iterrows():
       for j in row[1].followers_name:
-
-          df2 = df2.append(
-              {'source': row[1].values[0], 'target': j, 'edge_weigth': 1}, ignore_index=True)
+          newrow = {'source': row[1].values[0], 'target': j, 'edge_weigth': 1}
+          df2 = pd.concat([df2, pd.DataFrame(newrow, index=[0])], ignore_index=True).reset_index(drop=True)
 
     return df2
 

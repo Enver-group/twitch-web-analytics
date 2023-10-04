@@ -141,7 +141,7 @@ def show_gephi_graphs():
                 ''',unsafe_allow_html=True 
             )
 
-@st.cache(show_spinner=False)
+@st.cache_data(show_spinner=False)
 def get_df_metrics(df):
     df_ranking_metrics = pd.DataFrame()
     for m in ["indegree","outdegree", "closeness", "betweenness", "pagerank", "nx_cores"]:
@@ -155,7 +155,7 @@ def get_df_metrics(df):
         df_ranking_metrics[m] = ranking10_names
     return df_ranking_metrics
 
-@st.cache(show_spinner=False)
+@st.cache_data(show_spinner=False)
 def get_pie_cores_topusers(df):
     df_ranking_metrics = get_df_metrics(df)
     # load k-core descomposition
@@ -202,7 +202,7 @@ def get_pie_cores_topusers(df):
     )
     return fig
 
-@st.cache(show_spinner=False)
+@st.cache_data(show_spinner=False)
 def get_metrics_streamer(streamer_name, df):
     streamer_id = str(int(df.loc[df["name"]==streamer_name]["id"]))
     df_position_metrics = pd.DataFrame()

@@ -1,5 +1,5 @@
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
 
 import streamlit as st
 from ..constants import *
@@ -37,7 +37,7 @@ def set_analysis(df):
     col2.plotly_chart(get_joins_overtime_plot(df),use_container_width=True)
 
 
-@st.cache(show_spinner=False)
+@st.cache_data(show_spinner=False)
 def get_scatter_plotly(df):
     # Plot the graph with logarithmic scale for the number of followers
     fig = px.scatter(df.head(5000), x="num_followers", y="view_count",
@@ -125,10 +125,12 @@ def get_barplot_of_by_fig(df,bar_of,bar_by,n_max=5000):
     return fig
 
 def get_joins_overtime_plot(df):
-    df = df.copy()
-    df["month"] = df.created_at.dt.strftime("%Y-%m")
+    df = df.copy().assign(
+        month=lambda x: x.created_at.dt.strftime("%Y-%m")
+    )
     df["count"] = 1
-    df = df.groupby("month").sum().reset_index()
+    # agg by month
+    df = df[['count', 'month']].groupby('month').sum().reset_index()
     df["cumulative_growth"] = df['count'].cumsum()
 
     fig = px.bar(

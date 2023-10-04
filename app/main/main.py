@@ -2,7 +2,9 @@ import streamlit as st
 import pandas as pd
 import sys
 sys.path.append('.')
-
+sys.path.append('/Users/simon/Documents/Projects/data-viz/twitch-web-analytics')
+import src
+print(dir(src), src.__file__)
 from src.app.pages import set_home, set_data, set_analysis, set_graph_analysis
 from src.app.constants import *
 
@@ -37,7 +39,7 @@ st.markdown(hide_streamlit_menu_style, unsafe_allow_html=True)
 
 data_path = "data/streamers_small.feather"
 
-@st.cache(persist=True, show_spinner=False)
+@st.cache_data(persist=True, show_spinner=False)
 def load_data():
     df = pd.read_feather(data_path)
     return df
